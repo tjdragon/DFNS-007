@@ -1,0 +1,35 @@
+{
+  "name": "bonds",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.0.7",
+    "@nomicfoundation/hardhat-network-helpers": "^3.0.3",
+    "@nomicfoundation/hardhat-node-test-runner": "^3.0.8",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.2",
+    "@nomicfoundation/hardhat-viem": "^3.0.2",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.19.11",
+    "chai": "^6.2.2",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "hardhat": "^3.1.8",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.0",
+    "viem": "^2.46.0"
+  },
+  "scripts": {
+    "deploy:stablecoin": "npx tsx scripts/DeployStableCoin.ts",
+    "deploy:bond": "npx tsx scripts/DeployBond.ts",
+    "mint:stablecoin": "npx tsx scripts/MintStableCoin.ts",
+    "ops:bond": "npx tsx scripts/BondOps.ts",
+    "ops:stable": "npx tsx scripts/StableCoinOps.ts"
+  },
+  "dependencies": {
+    "@dfns/sdk": "^0.8.11",
+    "@dfns/sdk-keysigner": "^0.8.11",
+    "@openzeppelin/contracts": "^5.4.0",
+    "dotenv": "^17.3.1"
+  }
+}

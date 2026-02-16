@@ -1,0 +1,238 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {BondMath} from "./BondMath.sol";
+
+contract Bond is ERC20, Ownable {
+    // State Variables
+    IERC20 public currency; // The Euro Stablecoin
+    uint256 public notional; // Face value (e.g. 100 * 10^6)
+    uint256 public apr; // Basis points (e.g. 400 = 4%)
+    uint256 public frequency; // Seconds
+    uint256 public maturityDate; // Timestamp
+    uint256 public issuanceDate; // When issuance closes
+
+    uint256 public constant GRACE_PERIOD = 5 days;
+    bool public isDefaulted;
+    bool public issuanceClosed;
+
+    mapping(uint256 => bool) public couponFunded; // Tracks if coupon (1, 2, 3...) is funded
+    mapping(uint256 => uint256) public couponAmounts; // Amount deposited for each coupon
+    mapping(address => uint256) public subscriptionReceipts;
+    mapping(uint256 => mapping(address => bool)) public couponClaimed; // couponIndex => user => claimed
+
+    // View Variables
+    uint256 public totalBondsIssued;
+    uint256 public totalBondsRedeemed;
+
+    // Events
+    event Subscribed(address indexed user, uint256 amount);
+    event IssuanceClosed(uint256 totalRaised, uint256 timestamp);
+    event BondClaimed(address indexed user, uint256 amount);
+    event CouponFunded(uint256 indexed couponIndex, uint256 amount);
+    event CouponClaimed(
+        address indexed user,
+        uint256 indexed couponIndex,
+        uint256 amount
+    );
+    event Redempted(address indexed user, uint256 amount);
+    event DefaultTriggered(uint256 timestamp);
+
+    constructor(
+        string memory name,
+        string memory symbol,
+        address _currency,
+        uint256 _notional,
+        uint256 _apr,
+        uint256 _frequency,
+        uint256 _maturityDate
+    ) ERC20(name, symbol) Ownable(msg.sender) {
+        currency = IERC20(_currency);
+        notional = _notional;
+        apr = _apr;
+        frequency = _frequency;
+        maturityDate = _maturityDate;
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 0;
+    }
+
+    // --- Primary Issuance ---
+
+    function subscribe(uint256 amount) external {
+        require(!issuanceClosed, "Issuance closed");
+        require(amount > 0, "Amount must be > 0");
+
+        // Transfer EURC to contract (Escrow)
+        // User must have approved the contract first!
+        currency.transferFrom(msg.sender, address(this), amount);
+
+        // Record subscription
+        subscriptionReceipts[msg.sender] += amount;
+
+        emit Subscribed(msg.sender, amount);
+    }
+
+    function closePrimaryIssuance() external onlyOwner {
+        require(!issuanceClosed, "Already closed");
+        issuanceClosed = true;
+        issuanceDate = block.timestamp;
+
+        emit IssuanceClosed(totalSupply(), block.timestamp);
+    }
+
+    function claimBond() external {
+        require(issuanceClosed, "Issuance not closed");
+        uint256 amount = subscriptionReceipts[msg.sender];
+        require(amount > 0, "No subscription");
+
+        subscriptionReceipts[msg.sender] = 0;
+
+        // Calculate Bond Tokens
+        // Assuming Notional is in Currency Unit (100 * 10^6).
+        // If User deposited 1000 * 10^6.
+        // They should get 10 Bonds.
+        // We mint 10 * 10^18 Bond ERC20.
+        // Formula: (Amount / Notional) * 10^18.
+
+        uint256 bondAmount = (amount * (10 ** decimals())) / notional;
+
+        require(bondAmount > 0, "Subscribe amount too low");
+
+        _mint(msg.sender, bondAmount);
+
+        totalBondsIssued += bondAmount;
+
+        emit BondClaimed(msg.sender, bondAmount);
+    }
+
+    // --- View Functions ---
+
+    function accruedInterest(address user) external view returns (uint256) {
+        uint256 balance = balanceOf(user);
+        if (balance == 0 || !issuanceClosed) return 0;
+
+        uint256 timeElapsed = block.timestamp - issuanceDate;
+        return
+            BondMath.calculateAccruedInterest(
+                (balance * notional) / (10 ** decimals()),
+                apr,
+                timeElapsed
+            );
+    }
+
+    // --- Coupon Logic ---
+
+    function depositCoupon(
+        uint256 couponIndex,
+        uint256 amount
+    ) external onlyOwner {
+        require(!couponFunded[couponIndex], "Coupon already funded");
+        require(!isDefaulted, "Bond defaulted");
+
+        // Issuer funds for EVERYONE.
+        currency.transferFrom(msg.sender, address(this), amount);
+
+        couponFunded[couponIndex] = true;
+        couponAmounts[couponIndex] = amount;
+
+        emit CouponFunded(couponIndex, amount);
+    }
+
+    function getCouponDate(uint256 couponIndex) public view returns (uint256) {
+        // Coupon 1 is at Issuance + Frequency (e.g. 3 months).
+        return issuanceDate + (couponIndex * frequency);
+    }
+
+    function timeToNextCoupon() public view returns (uint256) {
+        if (!issuanceClosed) {
+            return 0; // Or revert?
+        }
+
+        uint256 timeElapsed = block.timestamp - issuanceDate;
+        uint256 nextCouponIndex = (timeElapsed / frequency) + 1;
+        uint256 nextCouponDate = getCouponDate(nextCouponIndex);
+
+        if (block.timestamp >= nextCouponDate) {
+            return 0;
+        }
+
+        return nextCouponDate - block.timestamp;
+    }
+
+    function claimCoupon(uint256 couponIndex) external {
+        require(!isDefaulted, "Bond defaulted");
+        require(couponFunded[couponIndex], "Coupon not funded");
+
+        uint256 couponDate = getCouponDate(couponIndex);
+        require(block.timestamp > couponDate, "Coupon not due");
+
+        require(!couponClaimed[couponIndex][msg.sender], "Already claimed");
+
+        uint256 balance = balanceOf(msg.sender);
+        require(balance > 0, "No bonds held");
+
+        uint256 total = totalSupply();
+        uint256 totalCouponAmount = couponAmounts[couponIndex];
+
+        // Calculate Share
+        uint256 share = (balance * totalCouponAmount) / total;
+
+        couponClaimed[couponIndex][msg.sender] = true;
+
+        currency.transfer(msg.sender, share);
+
+        emit CouponClaimed(msg.sender, couponIndex, share);
+    }
+
+    // --- Redemption & Default ---
+
+    function redeem() external {
+        require(!isDefaulted, "Bond defaulted");
+        require(block.timestamp >= maturityDate, "Not mature");
+
+        uint256 balance = balanceOf(msg.sender);
+        require(balance > 0, "No bonds");
+
+        _burn(msg.sender, balance);
+
+        totalBondsRedeemed += balance;
+
+        // Return Principal
+        // Principal = Balance * Notional?
+        // We need to know how much Principal is PER BOND.
+        // Notional is Face Value (e.g. 100 EUR).
+        // Balance is 10 Bonds (10e18).
+        // User gets 10 * 100 EUR = 1000 EUR.
+
+        uint256 payout = (balance * notional) / (10 ** decimals());
+
+        currency.transfer(msg.sender, payout);
+        emit Redempted(msg.sender, payout);
+    }
+
+    // Allow issuer to deposit principal easily
+    function depositPrincipal(uint256 amount) external onlyOwner {
+        currency.transferFrom(msg.sender, address(this), amount);
+    }
+
+    function checkDefault(uint256 couponIndex) external {
+        require(!isDefaulted, "Already defaulted");
+
+        // Check if Grace Period passed for this coupon
+        uint256 couponDate = getCouponDate(couponIndex);
+
+        // Only trigger if date + grace has passed AND it's NOT funded.
+        if (
+            block.timestamp > couponDate + GRACE_PERIOD &&
+            !couponFunded[couponIndex]
+        ) {
+            isDefaulted = true;
+            emit DefaultTriggered(block.timestamp);
+        }
+    }
+}
