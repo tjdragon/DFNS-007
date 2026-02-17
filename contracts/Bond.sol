@@ -66,10 +66,6 @@ contract Bond is ERC20, Ownable {
         return 6;
     }
 
-    // ... (rest of the file)
-
-    // --- Primary Issuance ---
-
     function subscribe(uint256 amount) external {
         require(!issuanceClosed, "Issuance closed");
         require(amount > 0, "Amount must be > 0");
@@ -206,8 +202,6 @@ contract Bond is ERC20, Ownable {
 
         emit CouponClaimed(msg.sender, couponIndex, share);
     }
-
-    // --- Redemption & Default ---
 
     // --- Redemption & Default ---
 
