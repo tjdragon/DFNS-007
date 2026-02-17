@@ -186,7 +186,7 @@ async function main() {
                 console.log("Approving...");
                 await broadcast(currencyAddressForCoupon, currencyAbi, 'approve', [bondAddress, couponAmount]);
                 console.log("Depositing Coupon...");
-                await broadcast(bondAddress, bondAbi, 'depositCoupon', [nextCoupon, couponAmount]);
+                await broadcast(bondAddress, bondAbi, 'depositCoupon', []);
                 break;
             case '6':
                 console.log('Exiting...');

@@ -36,7 +36,7 @@ Investors subscribe to the bond offering by depositing EURC. They receive a "Sub
 ### 2. 💸 Coupon Payments
 Interest is paid periodically (e.g., quarterly). The Issuer must fund the contract before investors can claim.
 
-1.  **Fund**: Issuer calls `depositCoupon(couponIndex, amount)` to transfer EURC to the contract.
+1.  **Fund**: Issuer calls `depositCoupon()` to transfer EURC to the contract. The amount is automatically calculated based on the bond terms.
 2.  **Claim**: After the `couponDate`, holders call `claimCoupon(couponIndex)`.
     - *Logic*: `(User Balance / Total Supply) * Coupon Amount` is transferred to the user.
 
@@ -116,7 +116,7 @@ Accrued = (Principal * APR * TimeElapsed) / (365 days * 10000)
 
 ### Decimals
 - **Stablecoin**: Assumed 6 decimals (e.g., EURC/USDC).
-- **Bond Token**: 0 decimals (Indivisible units).
+- **Bond Token**: 6 decimals.
 - **Notional**: Face value per bond (e.g., 100 EUR).
 - **Cap**: Maximum amount of funds to be raised (e.g., 10M EUR).
 
@@ -140,7 +140,7 @@ Comprehensive test suite covering over-subscription, under-subscription, leap ye
 ```bash
 npx hardhat test
 ```
-*Includes `test/Bond.test.ts` and `test/BondExtended.test.ts`.*
+*Includes `test/Bond.test.ts`, `test/BondExtended.test.ts`, `test/BondSpecific.test.ts`, and `test/BondFull.test.ts`.*
 
 ---
 
