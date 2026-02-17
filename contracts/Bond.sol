@@ -117,13 +117,6 @@ contract Bond is ERC20, Ownable {
 
         subscriptionReceipts[msg.sender] = 0;
 
-        // Calculate Bond Tokens
-        // Assuming Notional is in Currency Unit (100 * 10^6).
-        // If User deposited 1000 * 10^6.
-        // They should get 10 Bonds.
-        // We mint 10 * 10^18 Bond ERC20.
-        // Formula: (Amount / Notional) * 10^18.
-
         uint256 bondAmount = (amount * (10 ** decimals())) / notional;
 
         require(bondAmount > 0, "Subscribe amount too low");
@@ -228,13 +221,6 @@ contract Bond is ERC20, Ownable {
         _burn(msg.sender, balance);
 
         totalBondsRedeemed += balance;
-
-        // Return Principal
-        // Principal = Balance * Notional?
-        // We need to know how much Principal is PER BOND.
-        // Notional is Face Value (e.g. 100 EUR).
-        // Balance is 10 Bonds (10e18).
-        // User gets 10 * 100 EUR = 1000 EUR.
 
         uint256 payout = (balance * notional) / (10 ** decimals());
 
