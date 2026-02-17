@@ -204,7 +204,10 @@ async function main() {
                         args: [couponIndex],
                     }) as boolean;
 
-                    if (!isFunded) continue; // Skip if not funded (maybe defaulted or just missing)
+                    if (!isFunded) {
+                        console.log(`Coupon #${i} due on ${new Date(Number(couponDate) * 1000).toLocaleDateString()} is NOT FUNDED (or has defaulted).`);
+                        continue; // Skip
+                    }
 
                     // Check claimed
                     const isClaimed = await client.readContract({

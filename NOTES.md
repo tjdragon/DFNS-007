@@ -69,8 +69,8 @@ Enter Bond Symbol (default: CB): SB1
 Enter Currency Address (StableCoin): 0xfd33ae0e1d7878f780b5d4a1ae01964972c8ff72
 Enter Notional Amount (default: 100): 1000000
 Enter APR in basis points (default: 400 = 4%): 
-Enter Coupon Frequency in seconds (default: 3 months = 7776000): 300
-Enter Duration in seconds to add to now for maturity (default: 1 year = 31536000): 3600
+Enter Coupon Frequency in seconds (default: 3 months = 7776000): 300 (every 5 minutes)
+Enter Duration in seconds to add to now for maturity (default: 1 year = 31536000): 3600 (1 hour)
 Enter Cap Amount (default: 1000000): 1000000
 Deployment data encoded.
 Broadcasting transaction...
@@ -121,6 +121,7 @@ npm run ops:bond
 ### 9. Holder checking status (accrued interest)
 
 ```text
+--- View Functions ---
 User Address: 0x126b39afd4c1027168bf936b68c4d011793e7609
 My Bond Balance: 800000
 My Accrued Interest: 0.207001 EURC
@@ -130,3 +131,19 @@ Issuance Date: 1771335324 (2/17/2026, 2:35:24 PM)
 Maturity Date: 1771338528 (2/17/2026, 3:28:48 PM)
 Time to Next Coupon: 84 seconds
 ```
+
+After 5 minutes, the accrued interest should be 0.340943 EURC:
+
+```text
+--- View Functions ---
+User Address: 0x126b39afd4c1027168bf936b68c4d011793e7609
+My Bond Balance: 800000
+My Accrued Interest: 0.340943 EURC
+Total Bonds Issued: 800000
+Total Bonds Redeemed: 0
+Issuance Date: 1771335324 (2/17/2026, 2:35:24 PM)
+Maturity Date: 1771338528 (2/17/2026, 3:28:48 PM)
+Time to Next Coupon: 264 seconds
+```
+
+### 10. Holder claiming coupon
