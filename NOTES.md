@@ -37,7 +37,8 @@ npm run deploy:bond
 - Enter APR in basis points (default: 400 = 4%): 
 - Enter Coupon Frequency in seconds (default: 3 months = 7776000): 86400
 - Enter Duration in seconds to add to now for maturity (default: 1 year = 31536000): 259200
-- https://sepolia.etherscan.io/address/0xfc43d0dff6bd69b62e1b72b4663db22a1d341ed9
+- https://sepolia.etherscan.io/tx/0x6eae5d61efcd91ed99ebbe5bd8c0656610b5b6f54e1e5ab899430af8370a14f5
+- https://sepolia.etherscan.io/address/0x1e0e8d14df06d83269871bc72d1d8322ebdef993
 
 ### 4. Stable Coin Operations
 

@@ -121,10 +121,9 @@ async function main() {
         console.log('1. View Status');
         console.log('2. Close Issuance');
         console.log('3. Deposit Coupon');
-        console.log('4. Deposit Principal');
-        console.log('5. Exit');
+        console.log('4. Exit');
 
-        const choice = await askQuestion('Select an operation (1-5): ');
+        const choice = await askQuestion('Select an operation (1-4): ');
 
         switch (choice) {
             case '1':
@@ -151,22 +150,6 @@ async function main() {
                 await broadcast(bondAddress, bondAbi, 'depositCoupon', [BigInt(couponIndex), couponAmount]);
                 break;
             case '4':
-                const principalAmountInput = await askQuestion("Enter Principal Amount: ");
-                const principalAmount = parseUnits(principalAmountInput, 6);
-
-                // Get Currency Address from Bond
-                const currencyAddressForPrincipal = await client.readContract({
-                    address: bondAddress as `0x${string}`,
-                    abi: bondAbi,
-                    functionName: 'currency',
-                }) as string;
-
-                console.log("Approving...");
-                await broadcast(currencyAddressForPrincipal, currencyAbi, 'approve', [bondAddress, principalAmount]);
-                console.log("Depositing Principal...");
-                await broadcast(bondAddress, bondAbi, 'depositPrincipal', [principalAmount]);
-                break;
-            case '5':
                 console.log('Exiting...');
                 rl.close();
                 return;

@@ -55,11 +55,16 @@ contract Bond is ERC20, Ownable {
         apr = _apr;
         frequency = _frequency;
         maturityDate = _maturityDate;
+
+        // Transfer Principal immediately (Must be approved)
+        currency.transferFrom(msg.sender, address(this), _notional);
     }
 
     function decimals() public view virtual override returns (uint8) {
         return 0;
     }
+
+    // ... (rest of the file)
 
     // --- Primary Issuance ---
 
@@ -191,6 +196,8 @@ contract Bond is ERC20, Ownable {
 
     // --- Redemption & Default ---
 
+    // --- Redemption & Default ---
+
     function redeem() external {
         require(!isDefaulted, "Bond defaulted");
         require(block.timestamp >= maturityDate, "Not mature");
@@ -213,11 +220,6 @@ contract Bond is ERC20, Ownable {
 
         currency.transfer(msg.sender, payout);
         emit Redempted(msg.sender, payout);
-    }
-
-    // Allow issuer to deposit principal easily
-    function depositPrincipal(uint256 amount) external onlyOwner {
-        currency.transferFrom(msg.sender, address(this), amount);
     }
 
     function checkDefault(uint256 couponIndex) external {

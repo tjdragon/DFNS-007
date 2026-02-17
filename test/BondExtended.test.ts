@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { parseUnits, createPublicClient, createWalletClient, custom, type PublicClient } from "viem";
+import { parseUnits, createPublicClient, createWalletClient, custom, type PublicClient, getContractAddress } from "viem";
 import { hardhat } from "viem/chains";
 import hre from "hardhat";
 import { describe, it, before } from "node:test";
@@ -81,13 +81,26 @@ describe("Bond Extended", function () {
         const now = await getLatestTime();
         const maturityDate = now + maturityDuration;
 
+
+
+        // Mint for Issuer First (so they can deposit principal)
+        const initialBalance = parseUnits("100000", 6);
+        await stableCoin.write.mint([accounts[0], initialBalance]);
+
+        // Pre-compute future address
+        const issuerAddress = accounts[0];
+        const nonce = await publicClient.getTransactionCount({ address: issuerAddress as `0x${string}` });
+        const futureBondAddress = await getContractAddress({ from: issuerAddress as `0x${string}`, nonce: BigInt(nonce) + 1n }); // +1 for approval tx
+
+        // Approve Notional
+        await stableCoin.write.approve([futureBondAddress, notional]);
+
         const bondInfo = await deployContract(issuer, "Bond", [
             "Corporate Bond 2027", "CB27", stableCoinInfo.address, notional, apr, frequency, maturityDate
         ]);
         const bond = await getContract(bondInfo.address!, bondInfo.abi, issuer);
 
         // Fund investors
-        const initialBalance = parseUnits("100000", 6);
         await stableCoin.write.mint([accounts[1], initialBalance]);
         await stableCoin.write.mint([accounts[2], initialBalance]);
 
@@ -130,9 +143,9 @@ describe("Bond Extended", function () {
         expect(await fix.bond.read.subscriptionReceipts([fix.accounts[2]])).to.equal(subAmount);
 
         // Check total raised (can infer from stablecoin balance of Bond or tracking events, checking receipts here)
-        // Bond contract holds the funds
+        // Bond contract holds the funds (Subscriptions + Principal)
         const bondBalance = await fix.stableCoin.read.balanceOf([fix.bondAddress]);
-        expect(bondBalance).to.equal(subAmount * 2n);
+        expect(bondBalance).to.equal(subAmount * 2n + fix.notional);
     });
 
     it("Should handle under-subscription (Issuance closed with less than expected)", async function () {

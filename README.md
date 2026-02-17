@@ -85,10 +85,7 @@ The project includes two main scripts for interacting with the contracts:
    The Holder calls this to "pull" their interest. The contract checks their balance and pays out the EURC stored in the vault.
 
 7. **Redeem**
-   At maturity, the Holder calls `bond.redeem()` to exchange the bond for the final Principal. (Note: Issuer must have deposited principal first).
-
-8. **Deposit Principal**
-   The Issuer calls this at maturity to "top up" the contract with the full Principal amount for redemption.
+   At maturity, the Holder calls `bond.redeem()` to exchange the bond for the final Principal. (Note: Issuer deposits principal in constructor).
 
 ### Role Breakdown
 
@@ -96,7 +93,6 @@ The project includes two main scripts for interacting with the contracts:
     - (1) View Status
     - (3) Close Issuance
     - (5) Deposit Coupon
-    - (8) Deposit Principal
 
 - **Bond Holder** (`npm run ops:holder`)
     - (2) Subscribe
@@ -153,7 +149,7 @@ npx hardhat test
     - **Push**: Issuer (`BondOps` -> Option 3) deposits coupon funds.
     - **Pull**: Investors (`HolderOps` -> Option 4) claim their coupon share.
 6.  **Redemption**:
-    - **Push**: Issuer (`BondOps` -> Option 4) deposits total Principal.
+    - **Principal**: Already funded by Issuer during deployment.
     - **Pull**: Investors (`HolderOps` -> Option 5) redeem their bonds for Principal.
 
 ---

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { parseUnits, createPublicClient, createWalletClient, custom, type PublicClient, type WalletClient } from "viem";
+import { parseUnits, createPublicClient, createWalletClient, custom, type PublicClient, type WalletClient, getContractAddress } from "viem";
 import { hardhat } from "viem/chains";
 import hre from "hardhat";
 import { describe, it, before } from "node:test";
@@ -91,6 +91,15 @@ describe("Bond Specific Test: Short Term", function () {
         const now = await getLatestTime();
         const maturityDate = now + frequency; // 1 week from now
 
+        // Pre-compute future address
+        const issuerAddress = accounts[0];
+        const nonce = await publicClient.getTransactionCount({ address: issuerAddress as `0x${string}` });
+        const futureBondAddress = await getContractAddress({ from: issuerAddress as `0x${string}`, nonce: BigInt(nonce) + 1n }); // +1 for approval tx
+
+        // Approve Notional
+        // The owner is accounts[0]
+        await currency.write.approve([futureBondAddress, notional]);
+
         // Deploy Bond
         const bondInfo = await deployContract(owner, "Bond", [
             "Short Term Bond",
@@ -163,10 +172,7 @@ describe("Bond Specific Test: Short Term", function () {
         expect(postCouponBalance - preCouponBalance).to.equal(couponAmount);
 
         // 8. Redeem Principal
-        const principalAmount = parseUnits("1000", 6);
-
-        await currency.write.approve([bondAddress, principalAmount]);
-        await bond.write.depositPrincipal([principalAmount]);
+        // Principal already deposited in constructor
 
         // Redeem
         await bondUser.write.redeem();
