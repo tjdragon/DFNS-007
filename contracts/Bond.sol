@@ -55,9 +55,6 @@ contract Bond is ERC20, Ownable {
         apr = _apr;
         frequency = _frequency;
         maturityDate = _maturityDate;
-
-        // Transfer Principal immediately (Must be approved)
-        currency.transferFrom(msg.sender, address(this), _notional);
     }
 
     function decimals() public view virtual override returns (uint8) {
@@ -88,6 +85,20 @@ contract Bond is ERC20, Ownable {
         issuanceDate = block.timestamp;
 
         emit IssuanceClosed(totalSupply(), block.timestamp);
+    }
+
+    function withdrawProceeds() external onlyOwner {
+        require(issuanceClosed, "Issuance not closed");
+        uint256 balance = currency.balanceOf(address(this));
+        require(balance > 0, "No proceeds");
+        currency.transfer(msg.sender, balance);
+    }
+
+    function returnPrincipal(uint256 amount) external onlyOwner {
+        require(
+            currency.transferFrom(msg.sender, address(this), amount),
+            "Transfer failed"
+        );
     }
 
     function claimBond() external {

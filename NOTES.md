@@ -3,9 +3,14 @@
 - Issuer Address: 0x6784be5606317b1ae050fb92f9a124364ddd8722
 - Holder Address: 0x126b39afd4c1027168bf936b68c4d011793e7609
 
+- Stable Coin Address: 0x5e0f3fbb5900f06fce7d2a5d336cc540504609f0
+
+
 ## Stable Coin Deployment
 
 ### 1. Deploy Stable Coin
+
+To run twice for the issuer and holder
 
 ```bash
 npm run deploy:stablecoin
@@ -14,19 +19,19 @@ npm run deploy:stablecoin
 ```text
 --- Deploy StableCoin ---
 Deploying from wallet address: 0x6784be5606317b1ae050fb92f9a124364ddd8722
-Enter StableCoin Name (default: Euro Coin): EURC2
-Enter StableCoin Symbol (default: EURC): EURC2
+Enter StableCoin Name (default: Euro Coin): ECU1
+Enter StableCoin Symbol (default: EURC): ECU1
 Deployment data encoded.
 Broadcasting transaction...
 Transaction broadcasted successfully!
-Transaction ID: tx-01jhl-d9ke9-evjoukea8opq5vl4
-Transaction Hash: 0x8fe5db5e4868d5e44d29023fc2bd8baa33b5df3cb414d53b9f1f50975f791aa9
+Transaction ID: tx-01jhl-h342c-egvbq9ku7903e63v
+Transaction Hash: 0xdc77268e85e6999ca9e0c08a59e98446921fb56def53a48381bf5090d32c0595
 Waiting for transaction receipt...
 
 !!! DEPLOYMENT SUCCESSFUL !!!
-Contract deployed at: 0xdea863cd6ce58e9c48c5d0507f479eea63ec0017
+Contract deployed at: 0x5e0f3fbb5900f06fce7d2a5d336cc540504609f0
 ```
-- https://sepolia.etherscan.io/address/0xdea863cd6ce58e9c48c5d0507f479eea63ec0017
+- https://sepolia.etherscan.io/address/0x5e0f3fbb5900f06fce7d2a5d336cc540504609f0
 
 
 ### 2. Mint Stable Coin
@@ -34,12 +39,21 @@ Contract deployed at: 0xdea863cd6ce58e9c48c5d0507f479eea63ec0017
 ```bash
 npm run mint:stablecoin
 ```
+```text
+Minting from wallet address (Minter Role): 0x6784be5606317b1ae050fb92f9a124364ddd8722
+Enter StableCoin Contract Address: 0x5e0f3fbb5900f06fce7d2a5d336cc540504609f0
+Enter Recipient Address: 0x6784be5606317b1ae050fb92f9a124364ddd8722
+Enter Amount to Mint: 1000
+Function data encoded.
+Broadcasting transaction...
+Transaction broadcasted successfully!
+Transaction ID: tx-01jhl-h5rrs-eslbfh00ribihgqo
+Transaction Hash: 0x4687262faa31f70e5c5794b4f0f0e095c9f02e1e1e9dab8ef38af66a58d8158b
+Waiting for transaction receipt...
 
-- Stable: 0x6B89a8E7e539d12E5a839Af8B8b6E82c1afdAb2B
-- To: 0x126b39afd4c1027168bf936b68c4d011793e7609
-- Amount: 100000000000000
-- https://sepolia.etherscan.io/tx/0x9eb155836078e8f22a0bba4876e2cf57bbea11971b4176350186c88caf685cf6
-- https://sepolia.etherscan.io/address/0x126b39afd4c1027168bf936b68c4d011793e7609#tokentxns
+!!! MINT SUCCESSFUL !!!
+Transaction Hash: 0x4687262faa31f70e5c5794b4f0f0e095c9f02e1e1e9dab8ef38af66a58d8158b
+```
 
 ### 3. Bond Deployment
 

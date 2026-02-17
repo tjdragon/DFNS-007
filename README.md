@@ -85,14 +85,17 @@ The project includes two main scripts for interacting with the contracts:
    The Holder calls this to "pull" their interest. The contract checks their balance and pays out the EURC stored in the vault.
 
 7. **Redeem**
-   At maturity, the Holder calls `bond.redeem()` to exchange the bond for the final Principal. (Note: Issuer deposits principal in constructor).
+   At maturity, the Holder calls `bond.redeem()` to exchange the bond for the final Principal. (Note: Issuer deposits principal via `returnPrincipal`).
 
 ### Role Breakdown
 
 - **Bond Issuer** (`npm run ops:bond`)
     - (1) View Status
     - (3) Close Issuance
+    - (3) Close Issuance
+    - (New) Withdraw Proceeds
     - (5) Deposit Coupon
+    - (New) Return Principal
 
 - **Bond Holder** (`npm run ops:holder`)
     - (2) Subscribe
@@ -143,13 +146,13 @@ npx hardhat test
 
 1.  **Issuance**: Issuer deploys Bond & Stablecoin.
 2.  **Subscription**: Investors (`HolderOps` -> Option 2) deposit Stablecoin into the Bond contract.
-3.  **Close Issuance**: Issuer (`BondOps` -> Option 2) closes the issuance. The interest accrual clock starts.
+3.  **Close Issuance**: Issuer (`BondOps` -> Option 2) closes the issuance. The interest accrual clock starts. Issuer calls `withdrawProceeds()` to take the raised funds.
 4.  **Claim Bonds**: Investors (`HolderOps` -> Option 3) claim their subscription. **This is when Bond Tokens are minted** and transferred to their wallet.
 5.  **Coupons**:
     - **Push**: Issuer (`BondOps` -> Option 3) deposits coupon funds.
     - **Pull**: Investors (`HolderOps` -> Option 4) claim their coupon share.
 6.  **Redemption**:
-    - **Principal**: Already funded by Issuer during deployment.
+    - **Principal**: Issuer funds via `returnPrincipal`.
     - **Pull**: Investors (`HolderOps` -> Option 5) redeem their bonds for Principal.
 
 ---
