@@ -63,7 +63,7 @@ contract Bond is ERC20, Ownable {
     }
 
     function decimals() public view virtual override returns (uint8) {
-        return 0;
+        return 6;
     }
 
     // ... (rest of the file)

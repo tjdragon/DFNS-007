@@ -44,7 +44,7 @@ contract StableCoin is
 
     // To mint 100 Stablecoins, you must pass 100 to the mint function.
     function decimals() public view virtual override returns (uint8) {
-        return 0;
+        return 6;
     }
 
     function pause() public onlyOwner {

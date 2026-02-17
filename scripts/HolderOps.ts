@@ -48,7 +48,7 @@ async function viewFunctions(userAddress: `0x${string}`) {
             functionName: 'accruedInterest',
             args: [userAddress],
         });
-        console.log(`My Accrued Interest: ${formatUnits(accrued as bigint, 0)} EURC`); // 0 decimals
+        console.log(`My Accrued Interest: ${formatUnits(accrued as bigint, 6)} EURC`); // 6 decimals
 
         const totalIssued = await client.readContract({
             address: bondAddress as `0x${string}`,
@@ -159,7 +159,7 @@ async function main() {
                 break;
             case '2':
                 const subAmountInput = await askQuestion("Enter Subscription Amount (StableCoin): ");
-                const subAmount = parseUnits(subAmountInput, 0);
+                const subAmount = parseUnits(subAmountInput, 6);
 
                 // Get Currency Address from Bond
                 const currencyAddress = await client.readContract({

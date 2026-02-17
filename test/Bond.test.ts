@@ -79,17 +79,17 @@ describe("Bond", function () {
         const stableCoin = await getContract(stableCoinInfo.address!, stableCoinInfo.abi, issuer);
 
         // Deploy Bond
-        const notional = parseUnits("100", 0);
+        const notional = parseUnits("100", 6);
         const apr = 400n;
         const frequency = 90n * 24n * 3600n;
         const maturityDuration = 360n * 24n * 3600n;
         const now = await getLatestTime();
         const maturityDate = now + maturityDuration;
 
-        const cap = parseUnits("1000000", 0);
+        const cap = parseUnits("1000000", 6);
 
         // Mint for Issuer First (so they can deposit principal)
-        const initialBalance = parseUnits("100000", 0);
+        const initialBalance = parseUnits("100000", 6);
         await stableCoin.write.mint([accounts[0], initialBalance]);
 
         // Pre-compute future address
@@ -123,7 +123,7 @@ describe("Bond", function () {
 
     it("Should allow subscription and update receipt", async function () {
         const fix1 = await deployBondFixture();
-        const subAmount = parseUnits("1000", 0);
+        const subAmount = parseUnits("1000", 6);
         const bondInvest1 = await getContract(fix1.bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, fix1.investor1);
         await bondInvest1.write.subscribe([subAmount]);
 
@@ -133,25 +133,25 @@ describe("Bond", function () {
 
     it("Should allow claiming bonds after issuance close", async function () {
         const fix1 = await deployBondFixture();
-        const subAmount = parseUnits("1000", 0);
+        const subAmount = parseUnits("1000", 6);
         const bondInvest1 = await getContract(fix1.bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, fix1.investor1);
         await bondInvest1.write.subscribe([subAmount]);
 
         await fix1.bond.write.closePrimaryIssuance();
         await bondInvest1.write.claimBond();
         const balance = await fix1.bond.read.balanceOf([fix1.accounts[1]]);
-        expect(balance).to.equal(10n);
+        expect(balance).to.equal(10000000n);
     });
 
     it("Should allow claiming coupons after due date", async function () {
         const fix1 = await deployBondFixture();
-        const subAmount = parseUnits("1000", 0);
+        const subAmount = parseUnits("1000", 6);
         const bondInvest1 = await getContract(fix1.bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, fix1.investor1);
         await bondInvest1.write.subscribe([subAmount]);
         await fix1.bond.write.closePrimaryIssuance();
         await bondInvest1.write.claimBond();
 
-        const couponAmount = parseUnits("100", 0);
+        const couponAmount = parseUnits("100", 6);
         await fix1.stableCoin.write.mint([fix1.accounts[0], couponAmount]);
         await fix1.stableCoin.write.approve([fix1.bondAddress, couponAmount]);
         await fix1.bond.write.depositCoupon([1n, couponAmount]);
@@ -165,7 +165,7 @@ describe("Bond", function () {
 
     it("Should redeem principal at maturity", async function () {
         const fix1 = await deployBondFixture();
-        const subAmount = parseUnits("1000", 0);
+        const subAmount = parseUnits("1000", 6);
         const bondInvest1 = await getContract(fix1.bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, fix1.investor1);
         await bondInvest1.write.subscribe([subAmount]);
         await fix1.bond.write.closePrimaryIssuance();

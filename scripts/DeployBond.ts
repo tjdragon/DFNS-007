@@ -33,7 +33,7 @@ async function main() {
         if (!currencyAddress) throw new Error("Currency address is required");
 
         const notionalInput = await askQuestion("Enter Notional Amount (default: 100): ") || "100";
-        const notional = parseUnits(notionalInput, 0); // Assuming 0 decimals for StableCoin
+        const notional = parseUnits(notionalInput, 6); // Assuming 6 decimals for StableCoin
 
         const aprInput = await askQuestion("Enter APR in basis points (default: 400 = 4%): ") || "400";
         const apr = BigInt(aprInput);
@@ -46,7 +46,7 @@ async function main() {
         const maturityDate = currentBlock.timestamp + BigInt(durationInput);
 
         const capInput = await askQuestion("Enter Cap Amount (default: 1000000): ") || "1000000";
-        const cap = parseUnits(capInput, 0);
+        const cap = parseUnits(capInput, 6);
 
         rl.close();
 

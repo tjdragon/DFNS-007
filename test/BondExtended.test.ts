@@ -74,17 +74,17 @@ describe("Bond Extended", function () {
         const stableCoinInfo = await deployContract(issuer, "StableCoin", [accounts[0], "Euro Coin", "EURC"]);
         const stableCoin = await getContract(stableCoinInfo.address!, stableCoinInfo.abi, issuer);
 
-        const notional = parseUnits("100", 0);
+        const notional = parseUnits("100", 6);
         const apr = 400n; // 4%
         const frequency = 90n * 24n * 3600n; // Quarterly
         const maturityDuration = 360n * 24n * 3600n; // 1 year approx
         const now = await getLatestTime();
         const maturityDate = now + maturityDuration;
 
-        const cap = parseUnits("1000000", 0);
+        const cap = parseUnits("1000000", 6);
 
         // Mint for Issuer First (so they can deposit principal)
-        const initialBalance = parseUnits("100000", 0);
+        const initialBalance = parseUnits("100000", 6);
         await stableCoin.write.mint([accounts[0], initialBalance]);
 
         // Pre-compute future address
@@ -130,7 +130,7 @@ describe("Bond Extended", function () {
 
     it("Should allow multiple holders to subscribe (Simulating 'Over-subscription' capability)", async function () {
         const fix = await deployBondFixture();
-        const subAmount = parseUnits("1000", 0);
+        const subAmount = parseUnits("1000", 6);
 
         // Investor 1 subscribes
         const bondInvest1 = await getContract(fix.bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, fix.investor1);
@@ -150,7 +150,7 @@ describe("Bond Extended", function () {
 
     it("Should handle under-subscription (Issuance closed with less than expected)", async function () {
         const fix = await deployBondFixture();
-        const subAmount = parseUnits("100", 0); // Small amount
+        const subAmount = parseUnits("100", 6); // Small amount
 
         const bondInvest1 = await getContract(fix.bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, fix.investor1);
         await bondInvest1.write.subscribe([subAmount]);
@@ -161,14 +161,14 @@ describe("Bond Extended", function () {
         // User claims
         await bondInvest1.write.claimBond();
         const balance = await fix.bond.read.balanceOf([fix.accounts[1]]);
-        expect(balance).to.equal(1n); // 100 / 100 = 1 bond
+        expect(balance).to.equal(1000000n); // 100 / 100 = 1 bond (1 * 10^6)
     });
 
     // --- Lifecycle Tests ---
 
     it("Should fail to redeem before maturity", async function () {
         const fix = await deployBondFixture();
-        const subAmount = parseUnits("1000", 0);
+        const subAmount = parseUnits("1000", 6);
         const bondInvest1 = await getContract(fix.bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, fix.investor1);
 
         await bondInvest1.write.subscribe([subAmount]);
@@ -209,7 +209,7 @@ describe("Bond Extended", function () {
 
     it("Should allow processing coupon payments correctly", async function () {
         const fix = await deployBondFixture();
-        const subAmount = parseUnits("1000", 0);
+        const subAmount = parseUnits("1000", 6);
         const bondInvest1 = await getContract(fix.bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, fix.investor1);
 
         await bondInvest1.write.subscribe([subAmount]);
@@ -220,7 +220,7 @@ describe("Bond Extended", function () {
         // 10 bonds * 100 notional * 4% APR * 0.25 (quarterly) ?? 
         // Logic in contract: Issuer deposits arbitrary amount for coupon.
         // Let's say issuer calculates it: 1000 * 4% * 90/360 = 10 EUR
-        const couponAmount = parseUnits("10", 0);
+        const couponAmount = parseUnits("10", 6);
 
         await fix.stableCoin.write.mint([fix.accounts[0], couponAmount]);
         await fix.stableCoin.write.approve([fix.bondAddress, couponAmount]);
@@ -250,7 +250,7 @@ describe("Bond Extended", function () {
 
     it("Should calculate accrued interest correctly", async function () {
         const fix = await deployBondFixture();
-        const subAmount = parseUnits("1000", 0);
+        const subAmount = parseUnits("1000", 6);
         const bondInvest1 = await getContract(fix.bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, fix.investor1);
 
         await bondInvest1.write.subscribe([subAmount]);
@@ -262,7 +262,7 @@ describe("Bond Extended", function () {
         // APR = 400 (4%)
         // Time = 1 year = 31536000s
         // Expected: (10 * 100 * 400 * 31536000) / (31536000 * 10000) = 400 / 100 = 4 EUR.
-        // Note: Bond.sol decimals is 0. So balance is 10.
+        // Note: Bond.sol decimals is 6. So balance is 10 * 10^6.
         // Formula in contract: (balance * notional) ... 
 
         const oneYear = 365n * 24n * 3600n;
@@ -275,13 +275,13 @@ describe("Bond Extended", function () {
         //          = (1000e6 * 400) / 10000 = 1000e6 * 0.04 = 40e6 (40 EUR)
 
         // Wait, notional is 100e6.
-        // Contract: (balance * notional) / (10**0) = 10 * 100e6 = 1000e6.
+        // Contract: (balance * notional) / (10**6) = 10e6 * 100e6 / 1e6 = 1000e6.
         // Accrued = (1000e6 * 400 * oneYear) / (oneYear * 10000) = 40e6.
 
         // Let's verify.
         // 40 EUR = 40000000
         // allow small error due to block time variance (1-2 seconds)
-        expect(Number(interest)).to.be.closeTo(Number(40n), Number(1n));
+        expect(Number(interest)).to.be.closeTo(Number(40000000n), Number(1000n));
     });
 
     it("Should handle leap year calculation correctly (via BondMath exposure or implicitly)", async function () {
@@ -293,7 +293,7 @@ describe("Bond Extended", function () {
         const fix = await deployBondFixture();
 
         // Check BondMath constants indirectly via accrued interest over 366 days
-        const subAmount = parseUnits("1000", 0);
+        const subAmount = parseUnits("1000", 6);
         const bondInvest1 = await getContract(fix.bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, fix.investor1);
         await bondInvest1.write.subscribe([subAmount]);
         await fix.bond.write.closePrimaryIssuance();
@@ -306,8 +306,8 @@ describe("Bond Extended", function () {
         // Expected: (1000e6 * 400 * 366 days) / (365 days * 10000)
         // = 40e6 * (366/365) approx 40.109e6
 
-        const expected = (1000n * 400n * leapYearSeconds) / (31536000n * 10000n);
-        expect(Number(interest)).to.be.closeTo(Number(expected), Number(2n));
+        const expected = (1000n * 1000000n * 400n * leapYearSeconds) / (31536000n * 10000n);
+        expect(Number(interest)).to.be.closeTo(Number(expected), Number(2000n));
     });
 
     it("Should correctly calculate edge cases (0 time, 0 balance)", async function () {
@@ -315,7 +315,7 @@ describe("Bond Extended", function () {
         const interest = await fix.bond.read.accruedInterest([fix.accounts[1]]);
         expect(interest).to.equal(0n); // No balance
 
-        const subAmount = parseUnits("1000", 0);
+        const subAmount = parseUnits("1000", 6);
         const bondInvest1 = await getContract(fix.bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, fix.investor1);
         await bondInvest1.write.subscribe([subAmount]);
         await fix.bond.write.closePrimaryIssuance();
@@ -324,7 +324,7 @@ describe("Bond Extended", function () {
         // 0 time elapsed
         const interestImm = await fix.bond.read.accruedInterest([fix.accounts[1]]);
         // Allow small deviation because block.timestamp might increment by 1 during the transaction
-        expect(Number(interestImm)).to.be.closeTo(Number(0n), Number(1n));
+        expect(Number(interestImm)).to.be.closeTo(Number(0n), Number(1000n));
     });
 
 });

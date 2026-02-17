@@ -139,7 +139,7 @@ async function main() {
                 break;
             case '4':
                 const principalAmountInput = await askQuestion("Enter Principal Amount to Return: ");
-                const principalAmount = parseUnits(principalAmountInput, 0);
+                const principalAmount = parseUnits(principalAmountInput, 6);
 
                 // Get Currency Address
                 const currencyAddressForPrincipal = await client.readContract({
@@ -160,7 +160,7 @@ async function main() {
             case '5':
                 const couponIndex = await askQuestion("Enter Coupon Index: ");
                 const couponAmountInput = await askQuestion("Enter Coupon Amount: ");
-                const couponAmount = parseUnits(couponAmountInput, 0);
+                const couponAmount = parseUnits(couponAmountInput, 6);
 
                 // Get Currency Address from Bond
                 const currencyAddressForCoupon = await client.readContract({

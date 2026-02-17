@@ -35,7 +35,7 @@ async function main() {
 
         const amountInput = await askQuestion("Enter Amount to Mint: ");
         if (!amountInput) throw new Error("Amount is required");
-        const amount = parseUnits(amountInput, 0);
+        const amount = parseUnits(amountInput, 6);
 
         rl.close();
 
