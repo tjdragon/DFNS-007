@@ -45,6 +45,9 @@ async function main() {
         const currentBlock = await client.getBlock();
         const maturityDate = currentBlock.timestamp + BigInt(durationInput);
 
+        const capInput = await askQuestion("Enter Cap Amount (default: 1000000): ") || "1000000";
+        const cap = parseUnits(capInput, 0);
+
         rl.close();
 
         // 3. Read Artifact
@@ -61,7 +64,7 @@ async function main() {
         const deployData = encodeDeployData({
             abi,
             bytecode,
-            args: [name, symbol, currencyAddress, notional, apr, frequency, maturityDate],
+            args: [name, symbol, currencyAddress, notional, apr, frequency, maturityDate, cap],
         });
 
         console.log("Deployment data encoded.");

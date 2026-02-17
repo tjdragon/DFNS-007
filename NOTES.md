@@ -4,7 +4,7 @@
 - Holder Address: 0x126b39afd4c1027168bf936b68c4d011793e7609
 
 - Stable Coin Address: 0x5e0f3fbb5900f06fce7d2a5d336cc540504609f0
-
+- Bond Address: 0xe9f35f4c95e5c8cd0309f457f508be036833d8f6
 
 ## Stable Coin Deployment
 
@@ -32,7 +32,7 @@ Waiting for transaction receipt...
 Contract deployed at: 0x5e0f3fbb5900f06fce7d2a5d336cc540504609f0
 ```
 - https://sepolia.etherscan.io/address/0x5e0f3fbb5900f06fce7d2a5d336cc540504609f0
-
+- https://sepolia.etherscan.io/address/0x126b39afd4c1027168bf936b68c4d011793e7609#tokentxns
 
 ### 2. Mint Stable Coin
 
@@ -60,16 +60,28 @@ Transaction Hash: 0x4687262faa31f70e5c5794b4f0f0e095c9f02e1e1e9dab8ef38af66a58d8
 ```bash
 npm run deploy:bond
 ```
-- Deploying from wallet address: 0x6784be5606317b1ae050fb92f9a124364ddd8722
-- Enter Bond Name (default: Corporate Bond): Corp Bond 0
-- Enter Bond Symbol (default: CB): CB0
-- Enter Currency Address (StableCoin): 0x6B89a8E7e539d12E5a839Af8B8b6E82c1afdAb2B
-- Enter Notional Amount (default: 100): 50000
-- Enter APR in basis points (default: 400 = 4%): 
-- Enter Coupon Frequency in seconds (default: 3 months = 7776000): 86400
-- Enter Duration in seconds to add to now for maturity (default: 1 year = 31536000): 259200
-- https://sepolia.etherscan.io/tx/0x6eae5d61efcd91ed99ebbe5bd8c0656610b5b6f54e1e5ab899430af8370a14f5
-- https://sepolia.etherscan.io/address/0x1e0e8d14df06d83269871bc72d1d8322ebdef993
+
+```text
+--- Deploy Bond ---
+Deploying from wallet address: 0x6784be5606317b1ae050fb92f9a124364ddd8722
+Enter Bond Name (default: Corporate Bond): TJBond
+Enter Bond Symbol (default: CB): TJB
+Enter Currency Address (StableCoin): 0x5e0f3fbb5900f06fce7d2a5d336cc540504609f0
+Enter Notional Amount (default: 100): 1000
+Enter APR in basis points (default: 400 = 4%): 
+Enter Coupon Frequency in seconds (default: 3 months = 7776000): 86400
+Enter Duration in seconds to add to now for maturity (default: 1 year = 31536000): 300000
+Deployment data encoded.
+Broadcasting transaction...
+Transaction broadcasted successfully!
+Transaction ID: tx-01jhl-i03qp-e0s9qrf70m4jihcc
+Transaction Hash: 0x7b5249542bbc99bb9d6ef26e4c374dfb38adb0e7ad9a4f0f1969a03753fd5e58
+Waiting for transaction receipt...
+
+!!! DEPLOYMENT SUCCESSFUL !!!
+Contract deployed at: 0xe9f35f4c95e5c8cd0309f457f508be036833d8f6
+```
+- https://sepolia.etherscan.io/address/0xe9f35f4c95e5c8cd0309f457f508be036833d8f6
 
 ### 4. Stable Coin Operations
 
@@ -82,8 +94,25 @@ npm run ops:stable
 ```bash
 npm run ops:holder
 ```
+```text
+Enter Subscription Amount (StableCoin): 100
+Approving...
+Preparing to approve...
+Broadcasting transaction...
+Transaction broadcasted successfully!
+Transaction Hash: 0x889c588625952044c631d2cd1e2bbf7b66a80d8df391129027a85db9d704c79d
+Transaction confirmed.
 
-- Subscribed for 5000: https://sepolia.etherscan.io/tx/0x7f3afd78c2d2deb55431e5ef1b62586b2e225e45a2827ce60b71fffbb6ffbddd
+Subscribing...
+Preparing to subscribe...
+Broadcasting transaction...
+Transaction broadcasted successfully!
+Transaction Hash: 0x1a84d2e4832d387dba646a4dbb9116454582b22f8d1a908d7d362ffc6c05868e
+Transaction confirmed.
+```
+
+- https://sepolia.etherscan.io/tx/0x1a84d2e4832d387dba646a4dbb9116454582b22f8d1a908d7d362ffc6c05868e
+- 
 
 ### 6. Bond Operations
 

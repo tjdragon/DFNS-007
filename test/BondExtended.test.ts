@@ -81,7 +81,7 @@ describe("Bond Extended", function () {
         const now = await getLatestTime();
         const maturityDate = now + maturityDuration;
 
-
+        const cap = parseUnits("1000000", 0);
 
         // Mint for Issuer First (so they can deposit principal)
         const initialBalance = parseUnits("100000", 0);
@@ -96,7 +96,7 @@ describe("Bond Extended", function () {
         await stableCoin.write.approve([futureBondAddress, notional]);
 
         const bondInfo = await deployContract(issuer, "Bond", [
-            "Corporate Bond 2027", "CB27", stableCoinInfo.address, notional, apr, frequency, maturityDate
+            "Corporate Bond 2027", "CB27", stableCoinInfo.address, notional, apr, frequency, maturityDate, cap
         ]);
         const bond = await getContract(bondInfo.address!, bondInfo.abi, issuer);
 
@@ -145,7 +145,7 @@ describe("Bond Extended", function () {
         // Check total raised (can infer from stablecoin balance of Bond or tracking events, checking receipts here)
         // Bond contract holds the funds (Subscriptions + Principal)
         const bondBalance = await fix.stableCoin.read.balanceOf([fix.bondAddress]);
-        expect(bondBalance).to.equal(subAmount * 2n + fix.notional);
+        expect(bondBalance).to.equal(subAmount * 2n);
     });
 
     it("Should handle under-subscription (Issuance closed with less than expected)", async function () {

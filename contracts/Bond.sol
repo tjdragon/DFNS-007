@@ -13,7 +13,9 @@ contract Bond is ERC20, Ownable {
     uint256 public apr; // Basis points (e.g. 400 = 4%)
     uint256 public frequency; // Seconds
     uint256 public maturityDate; // Timestamp
+    uint256 public metadata; // Optional metadata hash
     uint256 public issuanceDate; // When issuance closes
+    uint256 public cap; // Maximum to raise
 
     uint256 public constant GRACE_PERIOD = 5 days;
     bool public isDefaulted;
@@ -27,6 +29,7 @@ contract Bond is ERC20, Ownable {
     // View Variables
     uint256 public totalBondsIssued;
     uint256 public totalBondsRedeemed;
+    uint256 public totalSubscribed;
 
     // Events
     event Subscribed(address indexed user, uint256 amount);
@@ -48,13 +51,15 @@ contract Bond is ERC20, Ownable {
         uint256 _notional,
         uint256 _apr,
         uint256 _frequency,
-        uint256 _maturityDate
+        uint256 _maturityDate,
+        uint256 _cap
     ) ERC20(name, symbol) Ownable(msg.sender) {
         currency = IERC20(_currency);
         notional = _notional;
         apr = _apr;
         frequency = _frequency;
         maturityDate = _maturityDate;
+        cap = _cap;
     }
 
     function decimals() public view virtual override returns (uint8) {
@@ -69,12 +74,16 @@ contract Bond is ERC20, Ownable {
         require(!issuanceClosed, "Issuance closed");
         require(amount > 0, "Amount must be > 0");
 
+        // Check Cap
+        require(totalSubscribed + amount <= cap, "Cap exceeded");
+
+        // Record subscription
+        totalSubscribed += amount;
+        subscriptionReceipts[msg.sender] += amount;
+
         // Transfer EURC to contract (Escrow)
         // User must have approved the contract first!
         currency.transferFrom(msg.sender, address(this), amount);
-
-        // Record subscription
-        subscriptionReceipts[msg.sender] += amount;
 
         emit Subscribed(msg.sender, amount);
     }
@@ -84,7 +93,7 @@ contract Bond is ERC20, Ownable {
         issuanceClosed = true;
         issuanceDate = block.timestamp;
 
-        emit IssuanceClosed(totalSupply(), block.timestamp);
+        emit IssuanceClosed(totalSubscribed, block.timestamp);
     }
 
     function withdrawProceeds() external onlyOwner {

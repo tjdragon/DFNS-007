@@ -96,10 +96,16 @@ async function broadcast(contractAddress: string, abi: any, functionName: string
         });
 
         console.log("Transaction broadcasted successfully!");
-        console.log("Transaction Hash:", result.txHash);
+        console.log("DEBUG Response:", JSON.stringify(result, null, 2));
 
-        await client.waitForTransactionReceipt({ hash: result.txHash as `0x${string}` });
-        console.log("Transaction confirmed.\n");
+        if (result.txHash) {
+            console.log("Transaction Hash:", result.txHash);
+            await client.waitForTransactionReceipt({ hash: result.txHash as `0x${string}` });
+            console.log("Transaction confirmed.\n");
+        } else {
+            console.log("Transaction pending or requiring approval. ID:", result.id);
+            console.log("Status:", (result as any).status);
+        }
     } catch (error) {
         console.error(`Failed to ${functionName}:`, error);
     }

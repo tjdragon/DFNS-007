@@ -86,7 +86,7 @@ describe("Bond", function () {
         const now = await getLatestTime();
         const maturityDate = now + maturityDuration;
 
-
+        const cap = parseUnits("1000000", 0);
 
         // Mint for Issuer First (so they can deposit principal)
         const initialBalance = parseUnits("100000", 0);
@@ -101,7 +101,7 @@ describe("Bond", function () {
         await stableCoin.write.approve([bondAddress, notional]);
 
         const bondInfo = await deployContract(issuer, "Bond", [
-            "Corporate Bond 2027", "CB27", stableCoinInfo.address, notional, apr, frequency, maturityDate
+            "Corporate Bond 2027", "CB27", stableCoinInfo.address, notional, apr, frequency, maturityDate, cap
         ]);
         const bond = await getContract(bondInfo.address!, bondInfo.abi, issuer);
 
@@ -174,7 +174,17 @@ describe("Bond", function () {
         const now = await getLatestTime();
         if (now < fix1.maturityDate) await increaseTime(fix1.maturityDate - now + 10n);
 
-        // Principal already deposited in constructor
+        // Principal needs to be deposited by Issuer
+        // Issuer mints more stablecoin to cover principal
+        const principalAmount = subAmount; // 1:1 ratio if notional=1? No, logic: (balance * notional) / 10**decimals.
+        // Config: Notional 100. Decimals 0. Balance 10 (1000/100).
+        // Payout = 10 * 100 = 1000.
+        // So Issuer needs to deposit 1000.
+
+        await fix1.stableCoin.write.mint([fix1.accounts[0], principalAmount]);
+        await fix1.stableCoin.write.approve([fix1.bondAddress, principalAmount]);
+        await fix1.bond.write.returnPrincipal([principalAmount]);
+
         const preRedeemBal = await fix1.stableCoin.read.balanceOf([fix1.accounts[1]]);
         await bondInvest1.write.redeem();
         const postRedeemBal = await fix1.stableCoin.read.balanceOf([fix1.accounts[1]]);

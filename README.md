@@ -117,6 +117,7 @@ Accrued = (Principal * APR * TimeElapsed) / (365 days * 10000)
 - **Stablecoin**: Assumed 6 decimals (e.g., EURC/USDC).
 - **Bond Token**: 0 decimals (Indivisible units).
 - **Notional**: Face value per bond (e.g., 100 EUR).
+- **Cap**: Maximum amount of funds to be raised (e.g., 10M EUR).
 
 ---
 
