@@ -1,4 +1,4 @@
-# 🏦 Bond Issuance on Ethereum
+# 🏦 Bond Issuance secured by DFNS
 
 Professional Solidity implementation of a corporate bond issuance platform, featuring primary issuance cycles, coupon payments, and redemption at maturity.
 
