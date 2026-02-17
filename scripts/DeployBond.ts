@@ -1,4 +1,4 @@
-import { encodeDeployData, parseUnits, getContractAddress, encodeFunctionData } from 'viem'
+import { encodeDeployData, parseUnits } from 'viem'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url';
@@ -55,38 +55,7 @@ async function main() {
         const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
         const { abi, bytecode } = artifact;
 
-        // 4. Pre-Approve Transfer
-        console.log("Pre-approving Principal Transfer...");
-        const nonce = await client.getTransactionCount({ address: walletAddress as `0x${string}` });
-        const futureAddress = await getContractAddress({ from: walletAddress as `0x${string}`, nonce: BigInt(nonce) + 1n }); // +1 because approve is next tx
 
-        console.log(`Computed Future Bond Address: ${futureAddress}`);
-
-        // Approve Notional
-        // We need Currency ABI
-        const currencyArtifactPath = path.join(__dirname, '../artifacts/contracts/StableCoin.sol/StableCoin.json');
-        const currencyArtifact = JSON.parse(fs.readFileSync(currencyArtifactPath, 'utf8'));
-
-        const approveData = encodeFunctionData({
-            abi: currencyArtifact.abi,
-            functionName: 'approve',
-            args: [futureAddress, notional]
-        });
-
-        const approveTx = {
-            kind: "Eip1559",
-            to: currencyAddress,
-            data: approveData
-        };
-
-        const approveResult = await dfnsApi.wallets.broadcastTransaction({
-            walletId: BANK_WALLET_ID,
-            body: approveTx as any
-        });
-
-        console.log(`Approval Broadcasted: ${approveResult.txHash}`);
-        await client.waitForTransactionReceipt({ hash: approveResult.txHash as `0x${string}` });
-        console.log("Approval Confirmed.");
 
         // 5. Encode Deployment Data
         const deployData = encodeDeployData({
