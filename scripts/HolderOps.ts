@@ -155,20 +155,6 @@ async function main() {
                 await broadcast(bondAddress, bondAbi, 'claimCoupon', [BigInt(claimIndex)]);
                 break;
             case '5':
-                const redeemAmountInput = await askQuestion("Enter Principal Amount to Redeem: ");
-                const redeemAmount = parseUnits(redeemAmountInput, 6);
-
-                // Get Currency Address from Bond
-                const currencyAddressForRedeem = await client.readContract({
-                    address: bondAddress as `0x${string}`,
-                    abi: bondAbi,
-                    functionName: 'currency',
-                }) as string;
-
-                console.log("Approving...");
-                await broadcast(currencyAddressForRedeem, currencyAbi, 'approve', [bondAddress, redeemAmount]);
-                console.log("Depositing Principal...");
-                await broadcast(bondAddress, bondAbi, 'depositPrincipal', [redeemAmount]);
                 console.log("Redeeming...");
                 await broadcast(bondAddress, bondAbi, 'redeem');
                 break;

@@ -45,8 +45,17 @@ npm run deploy:bond
 npm run ops:stable
 ```
 
-### 5. Bond Operations
+### 5. Holder Operations
+
+```bash
+npm run ops:holder
+```
+
+- Subscribed for 5000: https://sepolia.etherscan.io/tx/0x7f3afd78c2d2deb55431e5ef1b62586b2e225e45a2827ce60b71fffbb6ffbddd
+
+### 6. Bond Operations
 
 ```bash
 npm run ops:bond
 ```
+- Closing Issuance: https://sepolia.etherscan.io/tx/0xe8b305188091345375928632f023a9254f4713cca3b0b234b8e4faed31df6d6a
