@@ -30,9 +30,26 @@ async function getContractABI(name: string) {
     return artifact.abi;
 }
 
-async function viewFunctions() {
+async function viewFunctions(userAddress: `0x${string}`) {
     console.log('\n--- View Functions ---');
+    console.log(`User Address: ${userAddress}`);
     try {
+        const balance = await client.readContract({
+            address: bondAddress as `0x${string}`,
+            abi: bondAbi,
+            functionName: 'balanceOf',
+            args: [userAddress],
+        });
+        console.log(`My Bond Balance: ${balance}`);
+
+        const accrued = await client.readContract({
+            address: bondAddress as `0x${string}`,
+            abi: bondAbi,
+            functionName: 'accruedInterest',
+            args: [userAddress],
+        });
+        console.log(`My Accrued Interest: ${formatUnits(accrued as bigint, 0)} EURC`); // 0 decimals
+
         const totalIssued = await client.readContract({
             address: bondAddress as `0x${string}`,
             abi: bondAbi,
@@ -115,6 +132,9 @@ async function main() {
     bondAbi = await getContractABI("Bond");
     currencyAbi = await getContractABI("StableCoin");
 
+    const wallet = await dfnsApi.wallets.getWallet({ walletId: SENDER_WALLET_ID });
+    const userAddress = wallet.address as `0x${string}`;
+
     bondAddress = await askQuestion("Enter Bond Contract Address: ");
     if (!bondAddress) {
         console.error("Bond address required.");
@@ -135,7 +155,7 @@ async function main() {
 
         switch (choice) {
             case '1':
-                await viewFunctions();
+                await viewFunctions(userAddress!);
                 break;
             case '2':
                 const subAmountInput = await askQuestion("Enter Subscription Amount (StableCoin): ");
