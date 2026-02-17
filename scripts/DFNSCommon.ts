@@ -36,3 +36,5 @@ export const client = createPublicClient({
     chain: sepolia,
     transport: http(),
 })
+
+export const SENDER_WALLET_ID = "wa-01jh6-h40vk-eoq9u6gnnbl525ke";

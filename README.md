@@ -58,6 +58,49 @@ At the end of the bond's life (Maturity Date):
 
 ---
 
+## 💻 Operational Scripts
+
+The project includes two main scripts for interacting with the contracts:
+- `BondOps.ts` (Issuer Operations)
+- `HolderOps.ts` (Holder Operations)
+
+### Available Operations
+
+1. **View Status**
+   View the current state of the bond (Total Issued, Redeemed, Dates, etc.).
+
+2. **Subscribe (Approve + Subscribe)**
+   The Holder must call `EURC.approve()` and then `bond.subscribe()`. The contract cannot "take" their money without their permission.
+
+3. **Close Issuance**
+   The Issuer (or an automated timer) calls this once the deadline passes to lock the final funding amount and calculate any oversubscription ratios.
+
+4. **Claim Bond**
+   If the bond was oversubscribed, the Holder calls this to "pull" their bond shares and any excess EURC refund into their wallet.
+
+5. **Deposit Coupon**
+   The Issuer calls this quarterly to "top up" the contract with EURC. This is the "Push" part of the hybrid model.
+
+6. **Claim Coupon**
+   The Holder calls this to "pull" their interest. The contract checks their balance and pays out the EURC stored in the vault.
+
+7. **Redeem (Approve + Deposit + Redeem)**
+   At maturity, the Holder calls `bond.approve()` (to let the contract burn the bond) and then `bond.redeem()` to exchange the bond for the final Principal.
+
+### Role Breakdown
+
+- **Bond Issuer** (`npm run ops:bond`)
+    - (1) View Status
+    - (3) Close Issuance
+    - (5) Deposit Coupon
+
+- **Bond Holder** (`npm run ops:holder`)
+    - (2) Subscribe
+    - (6) Claim Coupon
+    - (4) Claim Bond
+
+---
+
 ## 🧮 Technical Details
 
 ### Math & Interest

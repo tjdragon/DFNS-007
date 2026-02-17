@@ -24,6 +24,7 @@
     "deploy:bond": "npx tsx scripts/DeployBond.ts",
     "mint:stablecoin": "npx tsx scripts/MintStableCoin.ts",
     "ops:bond": "npx tsx scripts/BondOps.ts",
+    "ops:holder": "npx tsx scripts/HolderOps.ts",
     "ops:stable": "npx tsx scripts/StableCoinOps.ts"
   },
   "dependencies": {

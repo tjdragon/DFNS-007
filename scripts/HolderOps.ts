@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url';
 import readline from 'readline';
-import { dfnsApi, BANK_WALLET_ID, client } from './DFNSCommon';
+import { dfnsApi, SENDER_WALLET_ID, client } from './DFNSCommon';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -91,7 +91,7 @@ async function broadcast(contractAddress: string, abi: any, functionName: string
 
         console.log("Broadcasting transaction...");
         const result = await dfnsApi.wallets.broadcastTransaction({
-            walletId: BANK_WALLET_ID,
+            walletId: SENDER_WALLET_ID,
             body: transaction as any
         });
 
@@ -117,39 +117,62 @@ async function main() {
     }
 
     while (true) {
-        console.log('\n--- Bond Issuer Operations ---');
+        console.log('\n--- Bond Holder Operations ---');
         console.log('1. View Status');
-        console.log('2. Close Issuance');
-        console.log('3. Deposit Coupon');
-        console.log('4. Exit');
+        console.log('2. Subscribe (Approve + Subscribe)');
+        console.log('3. Claim Bond');
+        console.log('4. Claim Coupon');
+        console.log('5. Redeem (Approve + Deposit + Redeem)');
+        console.log('6. Exit');
 
-        const choice = await askQuestion('Select an operation (1-4): ');
+        const choice = await askQuestion('Select an operation (1-6): ');
 
         switch (choice) {
             case '1':
                 await viewFunctions();
                 break;
             case '2':
-                await broadcast(bondAddress, bondAbi, 'closePrimaryIssuance');
-                break;
-            case '3':
-                const couponIndex = await askQuestion("Enter Coupon Index: ");
-                const couponAmountInput = await askQuestion("Enter Coupon Amount: ");
-                const couponAmount = parseUnits(couponAmountInput, 6);
+                const subAmountInput = await askQuestion("Enter Subscription Amount (StableCoin): ");
+                const subAmount = parseUnits(subAmountInput, 6);
 
                 // Get Currency Address from Bond
-                const currencyAddressForCoupon = await client.readContract({
+                const currencyAddress = await client.readContract({
                     address: bondAddress as `0x${string}`,
                     abi: bondAbi,
                     functionName: 'currency',
                 }) as string;
 
                 console.log("Approving...");
-                await broadcast(currencyAddressForCoupon, currencyAbi, 'approve', [bondAddress, couponAmount]);
-                console.log("Depositing Coupon...");
-                await broadcast(bondAddress, bondAbi, 'depositCoupon', [BigInt(couponIndex), couponAmount]);
+                await broadcast(currencyAddress, currencyAbi, 'approve', [bondAddress, subAmount]);
+                console.log("Subscribing...");
+                await broadcast(bondAddress, bondAbi, 'subscribe', [subAmount]);
+                break;
+            case '3':
+                await broadcast(bondAddress, bondAbi, 'claimBond');
                 break;
             case '4':
+                const claimIndex = await askQuestion("Enter Coupon Index: ");
+                await broadcast(bondAddress, bondAbi, 'claimCoupon', [BigInt(claimIndex)]);
+                break;
+            case '5':
+                const redeemAmountInput = await askQuestion("Enter Principal Amount to Redeem: ");
+                const redeemAmount = parseUnits(redeemAmountInput, 6);
+
+                // Get Currency Address from Bond
+                const currencyAddressForRedeem = await client.readContract({
+                    address: bondAddress as `0x${string}`,
+                    abi: bondAbi,
+                    functionName: 'currency',
+                }) as string;
+
+                console.log("Approving...");
+                await broadcast(currencyAddressForRedeem, currencyAbi, 'approve', [bondAddress, redeemAmount]);
+                console.log("Depositing Principal...");
+                await broadcast(bondAddress, bondAbi, 'depositPrincipal', [redeemAmount]);
+                console.log("Redeeming...");
+                await broadcast(bondAddress, bondAbi, 'redeem');
+                break;
+            case '6':
                 console.log('Exiting...');
                 rl.close();
                 return;
