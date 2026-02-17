@@ -23,6 +23,16 @@ The system is designed with a **hybrid approach**:
 
 ---
 
+## 🔐 Secured by DFNS
+
+All blockchain interactions in this project are secured by **[DFNS](https://www.dfns.co/)**, a Wallet-as-a-Service infrastructure.
+
+-   **Keyless Security**: Private keys are never exposed; they are sharded and distributed using MPC (Multi-Party Computation).
+-   **API-Driven**: Operations are performed via secure APIs, ensuring programmatic control and audit trails.
+-   **Bank-Grade Custody**: Designed for financial institutions requiring the highest level of security for digital assets.
+
+---
+
 ## 🔄 Bond Lifecycle Flows
 
 ### 1. 📝 Primary Issuance (Subscription)
