@@ -135,7 +135,7 @@ async function main() {
             case '3':
                 const couponIndex = await askQuestion("Enter Coupon Index: ");
                 const couponAmountInput = await askQuestion("Enter Coupon Amount: ");
-                const couponAmount = parseUnits(couponAmountInput, 6);
+                const couponAmount = parseUnits(couponAmountInput, 0);
 
                 // Get Currency Address from Bond
                 const currencyAddressForCoupon = await client.readContract({

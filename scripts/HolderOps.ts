@@ -133,7 +133,7 @@ async function main() {
                 break;
             case '2':
                 const subAmountInput = await askQuestion("Enter Subscription Amount (StableCoin): ");
-                const subAmount = parseUnits(subAmountInput, 6);
+                const subAmount = parseUnits(subAmountInput, 0);
 
                 // Get Currency Address from Bond
                 const currencyAddress = await client.readContract({

@@ -37,14 +37,14 @@ async function viewFunctions() {
             abi: currencyAbi,
             functionName: 'totalMinted',
         });
-        console.log(`Total Minted: ${formatUnits(totalMinted as bigint, 6)}`);
+        console.log(`Total Minted: ${formatUnits(totalMinted as bigint, 0)}`);
 
         const totalBurnt = await client.readContract({
             address: currencyAddress as `0x${string}`,
             abi: currencyAbi,
             functionName: 'totalBurnt',
         });
-        console.log(`Total Burnt: ${formatUnits(totalBurnt as bigint, 6)}`);
+        console.log(`Total Burnt: ${formatUnits(totalBurnt as bigint, 0)}`);
 
         const paused = await client.readContract({
             address: currencyAddress as `0x${string}`,
@@ -60,7 +60,7 @@ async function viewFunctions() {
             functionName: 'balanceOf',
             args: [wallet.address]
         });
-        console.log(`Bank Wallet Balance: ${formatUnits(balance as bigint, 6)}`);
+        console.log(`Bank Wallet Balance: ${formatUnits(balance as bigint, 0)}`);
 
     } catch (error) {
         console.error("Error reading view functions:", error);
@@ -127,12 +127,12 @@ async function main() {
             case '2':
                 const toAddress = await askQuestion("Enter Recipient Address: ");
                 const mintAmountInput = await askQuestion("Enter Amount to Mint: ");
-                const mintAmount = parseUnits(mintAmountInput, 6);
+                const mintAmount = parseUnits(mintAmountInput, 0);
                 await broadcast('mint', [toAddress, mintAmount]);
                 break;
             case '3':
                 const burnAmountInput = await askQuestion("Enter Amount to Burn: ");
-                const burnAmount = parseUnits(burnAmountInput, 6);
+                const burnAmount = parseUnits(burnAmountInput, 0);
                 await broadcast('burn', [burnAmount]);
                 break;
             case '4':

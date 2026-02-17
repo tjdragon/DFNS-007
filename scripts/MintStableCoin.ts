@@ -33,9 +33,9 @@ async function main() {
         const toAddress = await askQuestion("Enter Recipient Address: ");
         if (!toAddress) throw new Error("Recipient address is required");
 
-        const amountInput = await askQuestion("Enter Amount to Mint (assuming 6 decimals): ");
+        const amountInput = await askQuestion("Enter Amount to Mint: ");
         if (!amountInput) throw new Error("Amount is required");
-        const amount = parseUnits(amountInput, 6);
+        const amount = parseUnits(amountInput, 0);
 
         rl.close();
 

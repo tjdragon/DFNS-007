@@ -16,7 +16,7 @@ describe("Bond Specific Test: Short Term", function () {
     let bondAddress: any;
 
     // Test Parameters
-    const notional = parseUnits("100", 6); // 100 EURC
+    const notional = parseUnits("100", 0); // 100 EURC
     const apr = 400n; // 4% (Basis points)
     const frequency = 604800n; // 1 week = 7 jours * 86400
 
@@ -84,8 +84,8 @@ describe("Bond Specific Test: Short Term", function () {
         currency = await getContract(stableCoinInfo.address!, stableCoinInfo.abi, owner);
 
         // Mint some currency to user and owner
-        await currency.write.mint([accounts[1], parseUnits("100000", 6)]);
-        await currency.write.mint([accounts[0], parseUnits("100000", 6)]);
+        await currency.write.mint([accounts[1], parseUnits("100000", 0)]);
+        await currency.write.mint([accounts[0], parseUnits("100000", 0)]);
 
         // Get current time
         const now = await getLatestTime();
@@ -120,7 +120,7 @@ describe("Bond Specific Test: Short Term", function () {
         const bondUser = await getContract(bondAddress, (await hre.artifacts.readArtifact("Bond")).abi, user);
 
         // 1. Subscribe
-        const investment = parseUnits("1000", 6); // 1000 EURC -> 10 Bonds
+        const investment = parseUnits("1000", 0); // 1000 EURC -> 10 Bonds
 
         // Approve
         const currencyUser = await getContract(currency.address, (await hre.artifacts.readArtifact("StableCoin")).abi, user);
@@ -156,7 +156,7 @@ describe("Bond Specific Test: Short Term", function () {
         }
 
         // 6. Fund Coupon (Coupon Index 1)
-        const couponAmount = parseUnits("100", 6);
+        const couponAmount = parseUnits("100", 0);
 
         await currency.write.approve([bondAddress, couponAmount]);
         await bond.write.depositCoupon([1n, couponAmount]);

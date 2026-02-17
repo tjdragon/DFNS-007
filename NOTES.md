@@ -1,5 +1,8 @@
 # Notes about the order of deployment and tests
 
+- Issuer Address: 0x6784be5606317b1ae050fb92f9a124364ddd8722
+- Holder Address: 0x126b39afd4c1027168bf936b68c4d011793e7609
+
 ## Stable Coin Deployment
 
 ### 1. Deploy Stable Coin
@@ -8,8 +11,22 @@
 npm run deploy:stablecoin
 ```
 
-- EURC0
-- https://sepolia.etherscan.io/address/0x6b89a8e7e539d12e5a839af8b8b6e82c1afdab2b
+```text
+--- Deploy StableCoin ---
+Deploying from wallet address: 0x6784be5606317b1ae050fb92f9a124364ddd8722
+Enter StableCoin Name (default: Euro Coin): EURC2
+Enter StableCoin Symbol (default: EURC): EURC2
+Deployment data encoded.
+Broadcasting transaction...
+Transaction broadcasted successfully!
+Transaction ID: tx-01jhl-d9ke9-evjoukea8opq5vl4
+Transaction Hash: 0x8fe5db5e4868d5e44d29023fc2bd8baa33b5df3cb414d53b9f1f50975f791aa9
+Waiting for transaction receipt...
+
+!!! DEPLOYMENT SUCCESSFUL !!!
+Contract deployed at: 0xdea863cd6ce58e9c48c5d0507f479eea63ec0017
+```
+- https://sepolia.etherscan.io/address/0xdea863cd6ce58e9c48c5d0507f479eea63ec0017
 
 
 ### 2. Mint Stable Coin
