@@ -83,14 +83,22 @@ async function main() {
             body: transaction as any
         });
 
+        console.log("Broadcasting transaction...");
         console.log("Transaction broadcasted successfully!");
-        console.log("Transaction ID:", result.id);
-        console.log("Transaction Hash:", result.txHash);
+        console.log("DEBUG Response:", JSON.stringify(result, null, 2));
 
-        console.log("Waiting for transaction receipt...");
-        const receipt = await client.waitForTransactionReceipt({ hash: result.txHash as `0x${string}` });
-        console.log("\n!!! DEPLOYMENT SUCCESSFUL !!!");
-        console.log("Contract deployed at:", receipt.contractAddress);
+        if (result.txHash) {
+            console.log("Transaction Hash:", result.txHash);
+            console.log("Waiting for transaction receipt...");
+            const receipt = await client.waitForTransactionReceipt({ hash: result.txHash as `0x${string}` });
+            console.log("\n!!! DEPLOYMENT SUCCESSFUL !!!");
+            console.log("Contract deployed at:", receipt.contractAddress);
+        } else {
+            console.log("Transaction pending or requiring approval. ID:", result.id);
+            console.log("Status:", (result as any).status);
+            console.log("\n!!! DEPLOYMENT PENDING !!!");
+            console.log("Please check your wallet for approval. Once approved, the contract will be deployed.");
+        }
 
     } catch (error) {
         console.error("Failed to deploy:", error);
