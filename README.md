@@ -82,7 +82,7 @@ The project includes two main scripts for interacting with the contracts:
    The Issuer calls this quarterly to "top up" the contract with EURC. This is the "Push" part of the hybrid model.
 
 6. **Claim Coupon**
-   The Holder calls this to "pull" their interest. The contract checks their balance and pays out the EURC stored in the vault.
+   The Holder calls this to "pull" their interest. The script automatically scans for all due, funded, and unclaimed coupons and claims them in sequence.
 
 7. **Redeem**
    At maturity, the Holder calls `bond.redeem()` to exchange the bond for the final Principal. (Note: Issuer deposits principal via `returnPrincipal`).
@@ -98,9 +98,10 @@ The project includes two main scripts for interacting with the contracts:
     - (New) Return Principal
 
 - **Bond Holder** (`npm run ops:holder`)
+    - (1) View Status (Includes Balance & Accrued Interest)
     - (2) Subscribe
-    - (6) Claim Coupon
-    - (4) Claim Bond
+    - (4) Claim Coupon (Automatic detection)
+    - (3) Claim Bond
 
 ---
 
@@ -148,12 +149,12 @@ npx hardhat test
 1.  **Issuance**: Issuer deploys Bond & Stablecoin.
 2.  **Subscription**: Investors (`HolderOps` -> Option 2) deposit Stablecoin into the Bond contract.
 3.  **Close Issuance**: Issuer (`BondOps` -> Option 2) closes the issuance. The interest accrual clock starts. Issuer calls `withdrawProceeds()` to take the raised funds.
-4.  **Claim Bonds**: Investors (`HolderOps` -> Option 3) claim their subscription. **This is when Bond Tokens are minted** and transferred to their wallet.
+4.  **Claim Bonds**: Investors (`HolderOps` -> Option 3) claim their subscription. **This is when Bond Tokens are minted**.
 5.  **Coupons**:
-    - **Push**: Issuer (`BondOps` -> Option 3) deposits coupon funds.
-    - **Pull**: Investors (`HolderOps` -> Option 4) claim their coupon share.
+    - **Push**: Issuer (`BondOps` -> Option 5) deposits coupon funds.
+    - **Pull**: Investors (`HolderOps` -> Option 4) automatically claim all due coupons.
 6.  **Redemption**:
-    - **Principal**: Issuer funds via `returnPrincipal`.
+    - **Principal**: Issuer funds via `returnPrincipal` (`BondOps` -> Option 4).
     - **Pull**: Investors (`HolderOps` -> Option 5) redeem their bonds for Principal.
 
 ---
