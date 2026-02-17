@@ -158,9 +158,23 @@ async function main() {
                 await broadcast(bondAddress, bondAbi, 'returnPrincipal', [principalAmount]);
                 break;
             case '5':
-                const couponIndex = await askQuestion("Enter Coupon Index: ");
-                const couponAmountInput = await askQuestion("Enter Coupon Amount: ");
-                const couponAmount = parseUnits(couponAmountInput, 6);
+                console.log("\nDepositing Coupon...");
+
+                // Get Coupon Amount from contract
+                const couponAmount = await client.readContract({
+                    address: bondAddress as `0x${string}`,
+                    abi: bondAbi,
+                    functionName: "getCouponAmount",
+                }) as bigint;
+
+                const nextCoupon = await client.readContract({
+                    address: bondAddress as `0x${string}`,
+                    abi: bondAbi,
+                    functionName: "getNextUnfundedCoupon",
+                }) as bigint;
+
+                console.log(`Next Coupon Index: ${nextCoupon}`);
+                console.log(`Required Amount: ${formatUnits(couponAmount, 6)} EURC`);
 
                 // Get Currency Address from Bond
                 const currencyAddressForCoupon = await client.readContract({
@@ -172,7 +186,7 @@ async function main() {
                 console.log("Approving...");
                 await broadcast(currencyAddressForCoupon, currencyAbi, 'approve', [bondAddress, couponAmount]);
                 console.log("Depositing Coupon...");
-                await broadcast(bondAddress, bondAbi, 'depositCoupon', [BigInt(couponIndex), couponAmount]);
+                await broadcast(bondAddress, bondAbi, 'depositCoupon', [nextCoupon, couponAmount]);
                 break;
             case '6':
                 console.log('Exiting...');

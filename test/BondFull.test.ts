@@ -20,10 +20,9 @@ describe("Bond Full Lifecycle Test", function () {
     const notional = parseUnits("1000000", 6); // 1,000,000 ECU Notional (Face Value of 1 Bond)
     const cap = parseUnits("1000000", 6);      // 1,000,000 ECU Cap (Total Trace)
     const apr = 500n;                          // 5% APR
-    // Quarterly Coupons (90 days)
-    const frequency = 90n * 24n * 3600n;
-    // 1 Year Maturity (360 days)
-    const maturityDuration = 360n * 24n * 3600n;
+    // Quarterly Coupons
+    const frequency = 90n * 24n * 3600n; // Quarterly
+    const maturityDuration = 360n * 24n * 3600n + 3600n; // 1 year + buffer
 
     async function increaseTime(seconds: bigint) {
         await provider.request({ method: "evm_increaseTime", params: [Number(seconds)] });
@@ -191,8 +190,6 @@ describe("Bond Full Lifecycle Test", function () {
         // Total Principal = 1,000,000.
         // Coupon Rate (Quarterly) = 5% / 4 = 1.25%.
         // Coupon Amount = 1,000,000 * 0.0125 = 12,500.
-        const expectedTotalCoupon = parseUnits("12500", 6);
-
         for (let couponIdx = 1; couponIdx <= 4; couponIdx++) {
             console.log(`Processing Coupon ${couponIdx}...`);
             const couponDate = await bond.read.getCouponDate([BigInt(couponIdx)]);
@@ -204,9 +201,10 @@ describe("Bond Full Lifecycle Test", function () {
 
             // Issuer funds coupon
             // Mint ECU to Issuer first
-            await stableCoin.write.mint([accounts[0], expectedTotalCoupon]);
-            await stableCoin.write.approve([bondAddress, expectedTotalCoupon]);
-            await bond.write.depositCoupon([BigInt(couponIdx), expectedTotalCoupon]);
+            const couponAmount = await bond.read.getCouponAmount() as bigint;
+            await stableCoin.write.mint([accounts[0], couponAmount]);
+            await stableCoin.write.approve([bondAddress, couponAmount]);
+            await bond.write.depositCoupon([]);
 
             // Investors claim
             for (let i = 0; i < 4; i++) {

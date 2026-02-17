@@ -1,0 +1,78 @@
+
+WARNING: You are using Node.js 25.6.1 which is not supported by Hardhat.
+Please upgrade to 22.10.0 or a later LTS version (even major version number)
+
+No contracts to compile
+Running node:test tests
+
+Issuance Date: 1771339132n
+Time to Next Coupon (approx): 604799
+DEBUG: Coupon Amount: 76712328n
+DEBUG: Next Index: 1n
+DEBUG: Issuance Date: 1771339132n
+DEBUG: Maturity Date: 1771943927n
+DEBUG: Frequency: 604800n
+DEBUG: Calculated Duration: 604795n
+DEBUG: Calculated Total Coupons: 0n
+  Bond Specific Test: Short Term
+    1) Should execute full lifecycle for 1 week bond
+
+
+1 failing (1 nodejs)
+
+  1) Bond Specific Test: Short Term
+       Should execute full lifecycle for 1 week bond:
+
+   ContractFunctionExecutionError: An unknown RPC error occurred.
+   
+   Request Arguments:
+     from:  0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+     to:    0xdc64a140aa3e981100a9beca4e685f962f0cf6c9
+     data:  0x4c984709
+    
+   Contract Call:
+     address:   0xdc64a140aa3e981100a9beca4e685f962f0cf6c9
+     function:  depositCoupon()
+     sender:    0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+   
+   Docs: https://viem.sh/docs/contract/writeContract
+   Details: VM Exception while processing transaction: reverted with reason string 'All coupons funded'
+   Version: viem@2.46.0
+       at getContractError (node_modules/viem/utils/errors/getContractError.ts:81:10)
+       at writeContract.internal (node_modules/viem/actions/wallet/writeContract.ts:241:13)
+       at async Proxy.<anonymous> (test/BondSpecific.test.ts:51:34)
+       at async TestContext.<anonymous> (test/BondSpecific.test.ts:176:9)
+     [cause]: TransactionExecutionError: An unknown RPC error occurred.
+     
+     Request Arguments:
+       from:  0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+       to:    0xdc64a140aa3e981100a9beca4e685f962f0cf6c9
+       data:  0x4c984709
+     
+     Details: VM Exception while processing transaction: reverted with reason string 'All coupons funded'
+     Version: viem@2.46.0
+         at getTransactionError (node_modules/viem/utils/errors/getTransactionError.ts:44:10)
+         at sendTransaction (node_modules/viem/actions/wallet/sendTransaction.ts:366:11)
+         at async writeContract.internal (node_modules/viem/actions/wallet/writeContract.ts:230:14)
+         at async Proxy.<anonymous> (test/BondSpecific.test.ts:51:34)
+         at async TestContext.<anonymous> (test/BondSpecific.test.ts:176:9)
+       [cause]: UnknownRpcError: An unknown RPC error occurred.
+       
+       Details: VM Exception while processing transaction: reverted with reason string 'All coupons funded'
+       Version: viem@2.46.0
+           at withRetry.delay.count.count (node_modules/viem/utils/buildRequest.ts:251:25)
+           at async attemptRetry (node_modules/viem/utils/promise/withRetry.ts:44:22)
+         [cause]: Error: VM Exception while processing transaction: reverted with reason string 'All coupons funded'
+             at Bond.depositCoupon (contracts/Bond.sol:179)
+             at EdrProvider.#handleEdrResponse (node_modules/hardhat/src/internal/builtin-plugins/network-manager/edr/edr-provider.ts:361:17)
+             at EdrProvider.#handleRequest (node_modules/hardhat/src/internal/builtin-plugins/network-manager/edr/edr-provider.ts:431:35)
+             at async next (node_modules/hardhat/src/internal/core/hook-manager.ts:122:13)
+             at async next (node_modules/hardhat/src/internal/core/hook-manager.ts:121:13)
+             at async EdrProvider.request (node_modules/hardhat/src/internal/builtin-plugins/network-manager/edr/edr-provider.ts:259:25)
+             at async AutomaticGasHandler.getMultipliedGasEstimation (node_modules/hardhat/src/internal/builtin-plugins/network-manager/request-handlers/handlers/gas/multiplied-gas-estimation.ts:29:30)
+             at async AutomaticGasHandler.handle (node_modules/hardhat/src/internal/builtin-plugins/network-manager/request-handlers/handlers/gas/automatic-gas-handler.ts:46:16)
+             at async Array.onRequest (node_modules/hardhat/dist/src/internal/builtin-plugins/network-manager/hook-handlers/network.js:28:46)
+             at async next (node_modules/hardhat/src/internal/core/hook-manager.ts:121:13)
+
+
+Test run failed

@@ -216,20 +216,27 @@ describe("Bond Extended", function () {
         await fix.bond.write.closePrimaryIssuance();
         await bondInvest1.write.claimBond(); // Holds 10 bonds
 
-        // Fund coupon 1
-        // 10 bonds * 100 notional * 4% APR * 0.25 (quarterly) ?? 
-        // Logic in contract: Issuer deposits arbitrary amount for coupon.
-        // Let's say issuer calculates it: 1000 * 4% * 90/360 = 10 EUR
-        const couponAmount = parseUnits("10", 6);
+        // Coupon 1
+        let couponAmount = await fix.bond.read.getCouponAmount();
 
         await fix.stableCoin.write.mint([fix.accounts[0], couponAmount]);
         await fix.stableCoin.write.approve([fix.bondAddress, couponAmount]);
-        await fix.bond.write.depositCoupon([1n, couponAmount]);
+        await fix.bond.write.depositCoupon([]);
+
+        await increaseTime(fix.frequency + 100n);
+
+        // Coupon 2
+        couponAmount = await fix.bond.read.getCouponAmount();
+        await fix.stableCoin.write.mint([fix.accounts[0], couponAmount]);
+        await fix.stableCoin.write.approve([fix.bondAddress, couponAmount]);
+        await fix.bond.write.depositCoupon([]);
 
         // Move time forward
         const now = await getLatestTime();
         const couponDate = await fix.bond.read.getCouponDate([1n]);
-        await increaseTime(couponDate - now + 10n);
+        if (now < couponDate) {
+            await increaseTime(couponDate - now + 10n);
+        }
 
         // Claim
         const preBalance = await fix.stableCoin.read.balanceOf([fix.accounts[1]]);

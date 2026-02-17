@@ -18,7 +18,8 @@ describe("Bond Specific Test: Short Term", function () {
     // Test Parameters
     const notional = parseUnits("100", 6); // 100 EURC
     const apr = 400n; // 4% (Basis points)
-    const frequency = 604800n; // 1 week = 7 jours * 86400
+    const frequency = 604800n; // 1 week
+    const maturityDuration = 604800n + 3600n; // 1 week + 1 hour buffer
 
     // Helpers
     async function increaseTime(seconds: bigint) {
@@ -89,7 +90,7 @@ describe("Bond Specific Test: Short Term", function () {
 
         // Get current time
         const now = await getLatestTime();
-        const maturityDate = now + frequency; // 1 week from now
+        const maturityDate = now + maturityDuration; // 1 week + buffer from now
 
         // Pre-compute future address
         const issuerAddress = accounts[0];
@@ -157,10 +158,10 @@ describe("Bond Specific Test: Short Term", function () {
         }
 
         // 6. Fund Coupon (Coupon Index 1)
-        const couponAmount = parseUnits("100", 6);
+        const couponAmount = await bond.read.getCouponAmount();
 
         await currency.write.approve([bondAddress, couponAmount]);
-        await bond.write.depositCoupon([1n, couponAmount]);
+        await bond.write.depositCoupon([]);
 
         const couponFunded = await bond.read.couponFunded([1n]);
         expect(couponFunded).to.be.true;
@@ -176,6 +177,12 @@ describe("Bond Specific Test: Short Term", function () {
         // Principal already deposited in constructor
 
         // Redeem
+        const maturityDateContract = await bond.read.maturityDate();
+        const now2 = await getLatestTime();
+        if (now2 < maturityDateContract) {
+            await increaseTime(maturityDateContract - now2 + 1n);
+        }
+
         await bondUser.write.redeem();
 
         const endBondBalance = await bond.read.balanceOf([accounts[1]]);

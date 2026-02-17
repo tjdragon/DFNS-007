@@ -151,10 +151,10 @@ describe("Bond", function () {
         await fix1.bond.write.closePrimaryIssuance();
         await bondInvest1.write.claimBond();
 
-        const couponAmount = parseUnits("100", 6);
+        const couponAmount = await fix1.bond.read.getCouponAmount();
         await fix1.stableCoin.write.mint([fix1.accounts[0], couponAmount]);
         await fix1.stableCoin.write.approve([fix1.bondAddress, couponAmount]);
-        await fix1.bond.write.depositCoupon([1n, couponAmount]);
+        await fix1.bond.write.depositCoupon([]);
 
         await increaseTime(fix1.frequency + 100n);
         const preBalance = await fix1.stableCoin.read.balanceOf([fix1.accounts[1]]);

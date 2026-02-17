@@ -26,6 +26,10 @@ contract Bond is ERC20, Ownable {
     mapping(address => uint256) public subscriptionReceipts;
     mapping(uint256 => mapping(address => bool)) public couponClaimed; // couponIndex => user => claimed
 
+    // Coupon Calculations
+    uint256 public couponAmountPerPeriod; // Calculated amount per coupon period
+    uint256 public nextCouponIndex = 1; // Next coupon to be funded
+
     // View Variables
     uint256 public totalBondsIssued;
     uint256 public totalBondsRedeemed;
@@ -89,6 +93,18 @@ contract Bond is ERC20, Ownable {
         issuanceClosed = true;
         issuanceDate = block.timestamp;
 
+        // Calculate Total Principal
+        uint256 totalPrincipal = (totalSubscribed * notional) /
+            (10 ** decimals());
+
+        // Calculate Coupon Amount Per Period (Principal * APR * Frequency / (Year * 10000))
+        // Note: BondMath.calculateAccruedInterest uses timeElapsed. Here timeElapsed is frequency.
+        couponAmountPerPeriod = BondMath.calculateAccruedInterest(
+            totalPrincipal,
+            apr,
+            frequency
+        );
+
         emit IssuanceClosed(totalSubscribed, block.timestamp);
     }
 
@@ -141,18 +157,37 @@ contract Bond is ERC20, Ownable {
 
     // --- Coupon Logic ---
 
-    function depositCoupon(
-        uint256 couponIndex,
-        uint256 amount
-    ) external onlyOwner {
-        require(!couponFunded[couponIndex], "Coupon already funded");
+    function getCouponAmount() external view returns (uint256) {
+        return couponAmountPerPeriod;
+    }
+
+    function getNextUnfundedCoupon() external view returns (uint256) {
+        return nextCouponIndex;
+    }
+
+    function depositCoupon() external onlyOwner {
+        require(issuanceClosed, "Issuance not closed");
         require(!isDefaulted, "Bond defaulted");
+
+        // Check against maturity -> total coupons
+        // Total coupons = Duration / Frequency
+        uint256 duration = maturityDate - issuanceDate;
+        uint256 totalCoupons = duration / frequency;
+        // Handle remainder? Usually assumes integer division fits or last coupon handles it.
+        // For simplicity, we assume strict periods.
+
+        require(nextCouponIndex <= totalCoupons, "All coupons funded");
+
+        uint256 couponIndex = nextCouponIndex;
+        uint256 amount = couponAmountPerPeriod;
 
         // Issuer funds for EVERYONE.
         currency.transferFrom(msg.sender, address(this), amount);
 
         couponFunded[couponIndex] = true;
         couponAmounts[couponIndex] = amount;
+
+        nextCouponIndex++;
 
         emit CouponFunded(couponIndex, amount);
     }
