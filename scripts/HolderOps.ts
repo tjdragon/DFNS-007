@@ -177,8 +177,54 @@ async function main() {
                 await broadcast(bondAddress, bondAbi, 'claimBond');
                 break;
             case '4':
-                const claimIndex = await askQuestion("Enter Coupon Index: ");
-                await broadcast(bondAddress, bondAbi, 'claimCoupon', [BigInt(claimIndex)]);
+                console.log("Checking for claimable coupons...");
+                // Loop to find due coupons
+                const now = BigInt(Math.floor(Date.now() / 1000));
+                let foundAny = false;
+
+                // Max coupons loop (e.g. 100 years quarterly = 400 coupons) - safe cap
+                for (let i = 1; i <= 400; i++) {
+                    const couponIndex = BigInt(i);
+                    const couponDate = await client.readContract({
+                        address: bondAddress as `0x${string}`,
+                        abi: bondAbi,
+                        functionName: 'getCouponDate',
+                        args: [couponIndex],
+                    }) as bigint;
+
+                    if (couponDate > now) {
+                        break; // Future coupons, stop searching
+                    }
+
+                    // Check funded
+                    const isFunded = await client.readContract({
+                        address: bondAddress as `0x${string}`,
+                        abi: bondAbi,
+                        functionName: 'couponFunded',
+                        args: [couponIndex],
+                    }) as boolean;
+
+                    if (!isFunded) continue; // Skip if not funded (maybe defaulted or just missing)
+
+                    // Check claimed
+                    const isClaimed = await client.readContract({
+                        address: bondAddress as `0x${string}`,
+                        abi: bondAbi,
+                        functionName: 'couponClaimed',
+                        args: [couponIndex, userAddress],
+                    }) as boolean;
+
+                    if (isClaimed) continue;
+
+                    // Action: Claim It!
+                    console.log(`Found claimable coupon #${i} due on ${new Date(Number(couponDate) * 1000).toLocaleDateString()}`);
+                    foundAny = true;
+                    await broadcast(bondAddress, bondAbi, 'claimCoupon', [couponIndex]);
+                }
+
+                if (!foundAny) {
+                    console.log("No claimable coupons found at this time.");
+                }
                 break;
             case '5':
                 console.log("Redeeming...");
