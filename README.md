@@ -327,3 +327,58 @@ Time to Next Coupon: 264 seconds
 ### 10. Issuer funds & Holder claims coupon
 
 - [Coupon Transaction](https://sepolia.etherscan.io/tx/0x709324bcb302e782a47df0225a6a6df0a43a94b3bb6d2d6f131d7ae6bd3b82a5)
+
+---
+
+## 💱 Secondary Trading
+
+Based on the architecture of this project and the current state of DeFi for Real World Assets (RWAs), **UniswapX (RFQ)** is considered the "gold standard" for secondary bond trading.
+
+### 1. Confirming the Approach
+
+For a bond project secured by **Dfns**, the Request-for-Quote (RFQ) model offers significant advantages over traditional AMMs or Order Books:
+
+| Approach | Suitability | Why? |
+| :--- | :--- | :--- |
+| **Uniswap (AMM)** | 🔴 Low | Bonds have a "fair value" based on yield-to-maturity. AMMs use a passive constant-product curve that causes massive slippage unless millions in liquidity are provided. It also exposes Liquidity Providers to "toxic flow" (arbitrage) when interest rates move. |
+| **Order Book (CLOB)** | 🟡 Medium | Precise, but expensive. Maintaining an on-chain Central Limit Order Book is gas-intensive on Ethereum. Moving to an app-chain (like dYdX) introduces significant overhead for a single bond project. |
+| **UniswapX / RFQ** | 🟢 **Gold Standard** | **Intent-based.** Professional Market Makers (Fillers) provide off-chain quotes based on real-time bond math. Trades settle on-chain only once a "hard quote" is signed. This offers **zero slippage**, **MEV protection**, and **gasless** swaps for the user. |
+
+**Recommendation:** Utilize **UniswapX (or CowSwap)**. With Dfns, users can sign "Trade Intents" (EIP-712 messages) using MPC-signing APIs without needing to hold ETH for gas.
+
+### 2. Testing in a Local Environment
+
+To test UniswapX or an RFQ system locally, you must simulate the "Filler" (Market Maker) ecosystem, as deploying a single contract is insufficient.
+
+#### Step A: Mainnet Forking
+Instead of deploying the entire UniswapX infrastructure, use **Anvil** (Foundry) or **Hardhat** to fork Ethereum Mainnet. This provides access to the existing UniswapX, Permit2, and liquidity infrastructure.
+
+```bash
+# Fork mainnet to get all protocol addresses and liquidity
+anvil --fork-url https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+```
+
+#### Step B: Local Scripting
+1.  **Deploy Bond:** Deploy the `DFNS-007` bond contract to the forked network.
+2.  **Permit2 Approval:** Simulate user compliance by approving the `Permit2` contract.
+3.  **Sign Intent:** Use the [UniswapX SDK](https://github.com/Uniswap/UniswapX-SDK) to generate a `DutchOrder`.
+4.  **Mock Filler:** Write a script to act as the "Filler", taking the signed order and calling `reactor.execute()` on the UniswapX Reactor contract.
+
+### 3. Testing on Testnet (Sepolia)
+
+Testing on public testnets requires a "Mock" Filler to pick up orders, as professional market makers may be scarce.
+
+1.  **Deployments:** Utilize Uniswap's existing **Permit2** and **Reactor** deployments on Sepolia.
+2.  **Mock Filler Strategy:** Run a simple "Auto-Filler" script:
+    *   Monitor the UniswapX Order API.
+    *   When a bond order appears, the script (using a separate wallet) "fills" it by providing the requested quote (e.g., EURC) and executing the transaction.
+3.  **Dfns Integration:** Ensure the Dfns webhook is configured to handle signature requests for the required EIP-712 intents.
+
+### Summary Checklist
+
+*   [ ] **Standard:** Ensure the bond is **ERC-20** compliant (or wrapped).
+*   [ ] **Permit2:** Implement `permit` (EIP-2612) to enable completely gasless flows.
+*   [ ] **SDK:** Integrate `@uniswap/uniswapx-sdk` for order creation.
+
+[🎥 **Reference:** How to Trade on UniswapX](https://www.youtube.com/watch?v=8_-KFEsGLvI)
+
