@@ -47,3 +47,4 @@ Also:
 - Make it look good and professional
 - Show me how to test it locally
 - We will take care of the deployment later 
+- All the work to be done in the ui folder

@@ -1,8 +1,10 @@
 # Node modules
 /node_modules
+/ui/node_modules
 
 # Compilation output
 /dist
+/ui/dist
 
 # pnpm deploy output
 /bundle
@@ -22,3 +24,6 @@
 # Local environment variables
 deploy/.env
 scripts/.env
+/ui/.env
+/ui/.env.local
+/ui/.env.*.local

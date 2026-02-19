@@ -1,0 +1,54 @@
+import { DEFAULT_CURRENCY_ADDRESS } from './contractHelpers'
+
+// Minimal ERC20 ABI for approval
+export const ERC20_ABI = [
+    "function approve(address spender, uint256 amount) public returns (bool)",
+    "function allowance(address owner, address spender) public view returns (uint256)",
+    "function balanceOf(address account) public view returns (uint256)",
+    "function decimals() public view returns (uint8)"
+]
+
+export const BOND_ABI = [
+    "constructor(string name, string symbol, address _currency, uint256 _notional, uint256 _apr, uint256 _frequency, uint256 _maturityDate, uint256 _cap)",
+    "function name() view returns (string)",
+    "function symbol() view returns (string)",
+    "function currency() view returns (address)",
+    "function notional() view returns (uint256)",
+    "function apr() view returns (uint256)",
+    "function frequency() view returns (uint256)",
+    "function maturityDate() view returns (uint256)",
+    "function cap() view returns (uint256)",
+    "function issuanceClosed() view returns (bool)",
+    "function isDefaulted() view returns (bool)",
+    "function totalSubscribed() view returns (uint256)",
+    "function totalBondsIssued() view returns (uint256)",
+    "function subscriptionReceipts(address) view returns (uint256)",
+    "function balanceOf(address) view returns (uint256)",
+    "function decimals() view returns (uint8)",
+    "function nextCouponIndex() view returns (uint256)",
+    "function couponAmountPerPeriod() view returns (uint256)",
+    "function closePrimaryIssuance() external",
+    "function withdrawProceeds() external",
+    "function depositCoupon() external",
+    "function subscribe(uint256 amount) external",
+    "function totalBondsRedeemed() view returns (uint256)",
+    "function issuanceDate() view returns (uint256)",
+    "function timeToNextCoupon() view returns (uint256)",
+    "function claimBond() external",
+    "function claimCoupon(uint256 couponIndex) external",
+    "function redeem() external",
+    "function checkDefault(uint256 couponIndex) external",
+    "function accruedInterest(address user) view returns (uint256)",
+    "function getCouponAmount() view returns (uint256)",
+    "function getNextUnfundedCoupon() view returns (uint256)",
+    "function getCouponDate(uint256 couponIndex) view returns (uint256)",
+    "function timeToNextCoupon() view returns (uint256)",
+    "function returnPrincipal(uint256 amount) external",
+    "event Subscribed(address indexed user, uint256 amount)",
+    "event IssuanceClosed(uint256 totalRaised, uint256 timestamp)",
+    "event BondClaimed(address indexed user, uint256 amount)",
+    "event CouponFunded(uint256 indexed couponIndex, uint256 amount)",
+    "event CouponClaimed(address indexed user, uint256 indexed couponIndex, uint256 amount)",
+    "event Redempted(address indexed user, uint256 amount)",
+    "event DefaultTriggered(uint256 timestamp)"
+]
