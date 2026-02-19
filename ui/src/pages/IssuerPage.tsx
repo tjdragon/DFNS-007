@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ethers, parseUnits, formatUnits } from 'ethers'
-import { Landmark, PlusCircle, List, ArrowRight, ShieldCheck, Wallet, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Landmark, PlusCircle, List, ArrowRight, ShieldCheck, Wallet, Loader2, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
 import { useWeb3 } from '../hooks/useWeb3'
 import { BOND_ABI, ERC20_ABI } from '../utils/constants'
 import { BOND_BYTECODE } from '../utils/contractBytecode'
@@ -108,6 +108,19 @@ export default function IssuerPage() {
                 contract.timeToNextCoupon()
             ])
 
+            // Calculate Total Accrued Interest (Liability)
+            let totalAccrued = '0'
+            if (issuanceClosed && totalBondsIssued > 0n) {
+                const now = Math.floor(Date.now() / 1000)
+                const timeElapsed = BigInt(now) - BigInt(issuanceDate)
+                if (timeElapsed > 0n) {
+                    const principal = (BigInt(totalBondsIssued) * BigInt(notional)) / (10n ** 6n)
+                    const yearInSeconds = 365n * 24n * 3600n
+                    const accrued = (principal * BigInt(apr) * timeElapsed) / (yearInSeconds * 10000n)
+                    totalAccrued = formatUnits(accrued, 6)
+                }
+            }
+
             setBondState({
                 name, symbol, currency,
                 notional: formatUnits(notional, 6),
@@ -122,7 +135,8 @@ export default function IssuerPage() {
                 totalBondsRedeemed: formatUnits(totalBondsRedeemed, 6),
                 nextCouponIndex: nextCouponIndex.toString(),
                 couponAmountPerPeriod: formatUnits(couponAmountPerPeriod, 6),
-                timeToNextCoupon: timeToNextCoupon.toString()
+                timeToNextCoupon: timeToNextCoupon.toString(),
+                totalAccrued
             })
         } catch (err) {
             console.error(err)
@@ -140,6 +154,17 @@ export default function IssuerPage() {
     useEffect(() => {
         fetchBondState()
     }, [managementAddress, account])
+
+    // Auto-refresh every 30s
+    useEffect(() => {
+        let interval: any
+        if (managementAddress && ethers.isAddress(managementAddress)) {
+            interval = setInterval(() => {
+                fetchBondState()
+            }, 30000)
+        }
+        return () => clearInterval(interval)
+    }, [managementAddress])
 
     const handleOwnerAction = async (action: string) => {
         if (!signer || !managementAddress) return
@@ -371,10 +396,20 @@ export default function IssuerPage() {
 
                     <div className="bg-slate-900 p-8 rounded-3xl shadow-xl shadow-slate-200 text-white overflow-hidden relative">
                         <div className="relative z-10">
-                            <h3 className="font-bold mb-6 flex items-center space-x-2">
-                                <ShieldCheck className="w-5 h-5 text-blue-400" />
-                                <span>Issuer Dashboard</span>
-                            </h3>
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="font-bold flex items-center space-x-2">
+                                    <ShieldCheck className="w-5 h-5 text-blue-400" />
+                                    <span>Issuer Dashboard</span>
+                                </h3>
+                                <button
+                                    onClick={fetchBondState}
+                                    disabled={isLoadingState || !managementAddress}
+                                    className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"
+                                    title="Refresh State"
+                                >
+                                    <RefreshCw className={`w-4 h-4 ${isLoadingState ? 'animate-spin' : ''}`} />
+                                </button>
+                            </div>
 
                             <div className="mb-6">
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Manage Contract Address</label>
@@ -426,6 +461,7 @@ export default function IssuerPage() {
                                         <p>Issuance Date: {bondState.issuanceDate}</p>
                                         <p>Maturity: {bondState.maturityDate}</p>
                                         <p>Redeemed: {bondState.totalBondsRedeemed} Units</p>
+                                        <p>Accrued Interest (Total): {bondState.totalAccrued} EURC</p>
                                         <p>Next Coupon ID: {bondState.nextCouponIndex}</p>
                                         <p>Total Coupon Amt: {bondState.couponAmountPerPeriod} Units</p>
                                         <p>Time to Next: {bondState.timeToNextCoupon}s</p>

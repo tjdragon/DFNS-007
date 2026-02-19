@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ethers, formatUnits, parseUnits } from 'ethers'
-import { Wallet, Search, TrendingUp, Calendar, ShieldCheck, DollarSign, Loader2, CheckCircle2, AlertCircle, ArrowUpRight, Gift, Scale, Landmark } from 'lucide-react'
+import { Wallet, Search, TrendingUp, Calendar, ShieldCheck, DollarSign, Loader2, CheckCircle2, AlertCircle, ArrowUpRight, Gift, Scale, Landmark, RefreshCw } from 'lucide-react'
 import { useWeb3 } from '../hooks/useWeb3'
 import { BOND_ABI, ERC20_ABI } from '../utils/constants'
 // Note: ERC20_ABI was in contractHelpers, let's make sure it's in constants or helpers.
@@ -42,7 +42,7 @@ export default function InvestorPage() {
             const [
                 name, symbol, notional, apr, frequency, maturityDate, cap,
                 issuanceClosed, isDefaulted, totalSubscribed, totalBondsIssued, totalBondsRedeemed,
-                issuanceDate, timeToNextCoupon,
+                issuanceDate, timeToNextCoupon, accruedInterestFetch,
                 receipt, bondBalance, allowance, currencyBalance, decimals
             ] = await Promise.all([
                 contract.name(), contract.symbol(), contract.notional(), contract.apr(),
@@ -50,6 +50,7 @@ export default function InvestorPage() {
                 contract.issuanceClosed(), contract.isDefaulted(), contract.totalSubscribed(),
                 contract.totalBondsIssued(), contract.totalBondsRedeemed(),
                 contract.issuanceDate(), contract.timeToNextCoupon(),
+                contract.accruedInterest(account),
                 contract.subscriptionReceipts(account),
                 contract.balanceOf(account),
                 currencyContract.allowance(account, bondAddress),
@@ -70,6 +71,7 @@ export default function InvestorPage() {
                 totalBondsRedeemed: totalBondsRedeemed.toString(),
                 issuanceDate: issuanceDate.toString() !== '0' ? new Date(Number(issuanceDate) * 1000).toLocaleDateString() : 'Not Closed',
                 timeToNextCoupon: timeToNextCoupon.toString(),
+                accruedInterest: formatUnits(accruedInterestFetch, decimals),
                 currencyAddress
             })
 
@@ -90,6 +92,17 @@ export default function InvestorPage() {
 
     useEffect(() => {
         if (account && bondAddress) fetchBondData()
+    }, [account, bondAddress])
+
+    // Auto-refresh every 30s
+    useEffect(() => {
+        let interval: any
+        if (account && bondAddress && ethers.isAddress(bondAddress)) {
+            interval = setInterval(() => {
+                fetchBondData()
+            }, 30000)
+        }
+        return () => clearInterval(interval)
     }, [account, bondAddress])
 
     const handleApprove = async () => {
@@ -167,14 +180,33 @@ export default function InvestorPage() {
                     <label className="block text-sm font-bold text-gray-700 mb-2 font-mono">
                         BOND SMART CONTRACT ADDRESS
                     </label>
-                    <div className="relative group">
-                        <input
-                            value={bondAddress}
-                            onChange={(e) => setBondAddress(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white border border-gray-200 shadow-sm group-focus-within:ring-2 ring-blue-500 outline-none transition-all"
-                            placeholder="0x..."
-                        />
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex-1 relative group">
+                            <input
+                                value={bondAddress}
+                                onChange={(e) => setBondAddress(e.target.value)}
+                                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white border border-gray-200 shadow-sm group-focus-within:ring-2 ring-blue-500 outline-none transition-all"
+                                placeholder="Enter bond contract address (0x...)"
+                            />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={fetchBondData}
+                                disabled={isLoading || !bondAddress}
+                                className="p-4 bg-white border border-gray-200 rounded-2xl text-gray-400 hover:text-blue-600 transition-colors shadow-sm"
+                                title="Refresh Data"
+                            >
+                                <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+                            </button>
+                            <button
+                                onClick={fetchBondData}
+                                disabled={isLoading || !bondAddress}
+                                className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 disabled:bg-gray-300 transition-all uppercase text-xs tracking-widest"
+                            >
+                                {isLoading ? 'Searching...' : 'Search Bond'}
+                            </button>
+                        </div>
                     </div>
                     {error && <p className="mt-2 text-red-500 text-xs font-bold">{error}</p>}
                 </div>
@@ -221,6 +253,11 @@ export default function InvestorPage() {
                                     <div className="text-gray-400 mb-1"><Scale className="w-4 h-4" /></div>
                                     <p className="text-sm font-bold">Frequency</p>
                                     <p className="text-xs text-gray-500">Every {Math.floor(Number(bondState.frequency) / 86400)} Days</p>
+                                </div>
+                                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 shadow-sm shadow-emerald-50">
+                                    <div className="text-emerald-500 mb-1"><DollarSign className="w-4 h-4" /></div>
+                                    <p className="text-sm font-bold">Accrued Interest</p>
+                                    <p className="text-xs font-bold text-emerald-600">+{bondState.accruedInterest} EURC</p>
                                 </div>
                             </div>
 
