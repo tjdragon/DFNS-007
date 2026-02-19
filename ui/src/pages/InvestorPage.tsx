@@ -130,9 +130,43 @@ export default function InvestorPage() {
             let tx
             if (action === 'subscribe') tx = await contract.subscribe(parseUnits(subscribeAmount, userStats.decimals))
             else if (action === 'claimBond') tx = await contract.claimBond()
-            else if (action === 'claimCoupon') tx = await contract.claimCoupon(param)
+            else if (action === 'claimCoupon') {
+                const now = Math.floor(Date.now() / 1000)
+                let found = false
+                // Match logic from HolderOps.ts: loop to find claimable index
+                for (let i = 1; i <= 400; i++) {
+                    const couponDate = await contract.getCouponDate(i)
+                    if (Number(couponDate) === 0 || Number(couponDate) > now) break
+
+                    const isFunded = await contract.couponFunded(i)
+                    const isClaimed = await contract.couponClaimed(i, account)
+
+                    if (isFunded && !isClaimed) {
+                        tx = await contract.claimCoupon(i)
+                        found = true
+                        break // Claim one per click for better UX in browser
+                    }
+                }
+                if (!found) alert("No claimable and funded coupons found.")
+            }
             else if (action === 'redeem') tx = await contract.redeem()
-            else if (action === 'checkDefault') tx = await contract.checkDefault(param)
+            else if (action === 'checkDefault') {
+                const now = Math.floor(Date.now() / 1000)
+                const gracePeriod = 5 * 24 * 3600 // 5 days
+                let found = false
+                for (let i = 1; i <= 400; i++) {
+                    const couponDate = await contract.getCouponDate(i)
+                    if (Number(couponDate) === 0 || (Number(couponDate) + gracePeriod) > now) break
+
+                    const isFunded = await contract.couponFunded(i)
+                    if (!isFunded) {
+                        tx = await contract.checkDefault(i)
+                        found = true
+                        break
+                    }
+                }
+                if (!found) alert("No defaults found within the grace period.")
+            }
 
             if (tx) {
                 await tx.wait()
