@@ -382,3 +382,36 @@ Testing on public testnets requires a "Mock" Filler to pick up orders, as profes
 
 [🎥 **Reference:** How to Trade on UniswapX](https://www.youtube.com/watch?v=8_-KFEsGLvI)
 
+---
+
+## 🔗 EAS Attestations (Bond ISIN Verification)
+
+To prove that a specific smart contract address corresponds to a given ISIN (International Securities Identification Number), we use the **[Ethereum Attestation Service (EAS)](https://attest.org/)**.
+
+### 1. Register Schema
+The schema used is `address bond, string isin`. This only needs to be registered once per network.
+
+```bash
+npm run eas:register
+```
+- **Schema UID**: `0xcf734e953bdc780dfcdda13c939ba45b9aae48894744bf8568f6fdcbc327d4a0`
+- **Registry (Sepolia)**: `0x0a7E2Ff54e76B8E6659aedc9103FB21c038050D0`
+
+Check the [Schema UID Online](https://sepolia.easscan.org/schema/view/0xcf734e953bdc780dfcdda13c939ba45b9aae48894744bf8568f6fdcbc327d4a0)
+
+### 2. Create Attestation
+Create a public, on-chain attestation linking a bond contract to its ISIN.
+
+```bash
+npm run eas:attest -- <bond_address> <isin>
+```
+
+**Example:**
+```bash
+npm run eas:attest -- 0xb162da11406a38bedf564093c304afb74d948c8f US1234567890
+```
+
+- **EAS Contract (Sepolia)**: `0xC2679fBD37d54388Ce493F1DB75320D236e1815e`
+- **Verify on EAS Scan**: [sepolia.easscan.org](https://sepolia.easscan.org/)
+
+Check the [attestation onchain](https://sepolia.easscan.org/attestation/view/0x0b8430f13c2cc489a4c93b9eb1ef1d37ad7f14b368c50a5e7d7cd61c4797c3a2)
