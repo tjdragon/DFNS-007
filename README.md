@@ -414,4 +414,15 @@ npm run eas:attest -- 0xb162da11406a38bedf564093c304afb74d948c8f US1234567890
 - **EAS Contract (Sepolia)**: `0xC2679fBD37d54388Ce493F1DB75320D236e1815e`
 - **Verify on EAS Scan**: [sepolia.easscan.org](https://sepolia.easscan.org/)
 
-Check the [attestation onchain](https://sepolia.easscan.org/attestation/view/0x0b8430f13c2cc489a4c93b9eb1ef1d37ad7f14b368c50a5e7d7cd61c4797c3a2)
+### 3. Check Attestation
+You can fetch and verify an existing attestation on-chain using its unique UID.
+
+```bash
+npm run eas:check -- <attestation_uid>
+```
+
+**Example:**
+```bash
+npm run eas:check -- 0x0b8430f13c2cc489a4c93b9eb1ef1d37ad7f14b368c50a5e7d7cd61c4797c3a2
+```
+This will output the attestation details, including the decoded `Bond Address` and `ISIN`.
