@@ -203,8 +203,8 @@ contract Bond is ERC20, Ownable {
         }
 
         uint256 timeElapsed = block.timestamp - issuanceDate;
-        uint256 nextCouponIndex = (timeElapsed / frequency) + 1;
-        uint256 nextCouponDate = getCouponDate(nextCouponIndex);
+        uint256 upcomingCouponIndex = (timeElapsed / frequency) + 1;
+        uint256 nextCouponDate = getCouponDate(upcomingCouponIndex);
 
         if (block.timestamp >= nextCouponDate) {
             return 0;
