@@ -8,6 +8,11 @@ Refactor `Bond.sol` to allow holders to subscribe using multiple predefined ERC2
 - **Decimals:** All allowed stablecoins are assumed to have precisely 6 decimals and a 1:1 value peg.
 - **Caps:** Token-specific limits are defined as absolute amounts (e.g., max 200,000 USDT) as opposed to dynamic percentages.
 
+### 💡 Why this is powerful
+By decoupling the `primaryCurrency` (Outbound) from the `allowedTokens` (Inbound), we achieve maximum flexibility for the issuer:
+- **Standard Use Case:** If you want to pay out in **USDC** and allow users to subscribe using both **USDC** and **USDT**, you simply set `primaryCurrency = USDC`, and then you pass `[USDC, USDT]` into the `allowedTokens` array when deploying. (You can set the USDC limit to match the global cap, and the USDT limit to your 20% cap).
+- **Advanced Use Case:** You could theoretically force users to *only* subscribe using **USDT**, but mandate that all coupons/payouts are dispersed in **USDC**. You would simply set `primaryCurrency = USDC` and only put `[USDT]` in the `allowedTokens` array!
+
 ---
 
 ## 🏗️ Implementation Details

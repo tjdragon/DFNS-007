@@ -3,6 +3,9 @@
 ## Objective
 Verify that `_currency` (or another parameter) is part of a valid EAS attestation during the deployment of the `Bond` contract.
 
+1. An attestation has been created for a stable coin (address, issuer, etc) using scripts/CreateAttestation.ts
+2. The bond contract will check the attestation when it is deployed - if valid - otherwise the contract deployment will fail.
+
 ## Design
 The best approach is to pass the **Attestation UID** to the `Bond` contract's constructor, then use the `IEAS` interface to query the Attestation Service on-chain.
 
